@@ -1,4 +1,4 @@
-#![doc = include_str!("../../core/src/error.md")]
+//#![doc = include_str!("../../core/src/error.md")]
 #![stable(feature = "rust1", since = "1.0.0")]
 
 #[cfg(test)]
