@@ -213,7 +213,7 @@
 // Don't link to std. We are std.
 #![no_std]
 // Tell the compiler to link to either panic_abort or panic_unwind
-#![needs_panic_runtime]
+//#![needs_panic_runtime]
 //
 // Lints:
 #![warn(deprecated_in_future)]
