@@ -102,6 +102,8 @@
 //! to use a pointer type to store something that may hold an integer, some of
 //! the time.
 
+extern crate alloc;
+
 use super::{Custom, ErrorData, ErrorKind, RawOsError, SimpleMessage};
 use alloc::boxed::Box;
 use core::marker::PhantomData;
