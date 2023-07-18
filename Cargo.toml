@@ -5,6 +5,8 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/sheref-sidarous/freertos-std"
 description = "A Clone of the Rust Standard Library for FreeRTOS"
 edition = "2021"
+keywords = ["FreeRTOS", "std"]
+categories = ["embedded", "os"]
 
 [lib]
 crate-type = ["rlib"]
