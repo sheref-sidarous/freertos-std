@@ -25,69 +25,12 @@
 pub mod common;
 
 cfg_if::cfg_if! {
-    if #[cfg(unix)] {
-        mod unix;
-        pub use self::unix::*;
-    } else if #[cfg(windows)] {
-        mod windows;
-        pub use self::windows::*;
-    } else if #[cfg(target_os = "solid_asp3")] {
-        mod solid;
-        pub use self::solid::*;
-    } else if #[cfg(target_os = "hermit")] {
-        mod hermit;
-        pub use self::hermit::*;
-    } else if #[cfg(target_os = "wasi")] {
-        mod wasi;
-        pub use self::wasi::*;
-    } else if #[cfg(target_family = "wasm")] {
-        mod wasm;
-        pub use self::wasm::*;
-    } else if #[cfg(all(target_vendor = "fortanix", target_env = "sgx"))] {
-        mod sgx;
-        pub use self::sgx::*;
-    } else if #[cfg(target_os = "freertos")] {
+    if #[cfg(target_os = "none")] {
         mod freertos;
         pub use self::freertos::*;
     } else {
-        //mod unsupported;
-        //pub use self::unsupported::*;
-        mod freertos;
-        pub use self::freertos::*;
-        //compile_error!("You shouldn't be here");
+        mod unsupported;
+        pub use self::unsupported::*;
     }
 }
-
-// Import essential modules from platforms used in `std::os` when documenting.
-//
-// Note that on some platforms those modules don't compile
-// (missing things in `libc` which is empty), so they are not included in `std::os` and can be
-// omitted here as well.
-
-#[cfg(doc)]
-#[cfg(not(any(
-    all(target_arch = "wasm32", not(target_os = "wasi")),
-    all(target_vendor = "fortanix", target_env = "sgx")
-)))]
-cfg_if::cfg_if! {
-    if #[cfg(not(windows))] {
-        // On non-Windows platforms (aka linux/osx/etc) pull in a "minimal"
-        // amount of windows goop which ends up compiling
-
-        #[macro_use]
-        #[path = "windows/compat.rs"]
-        pub mod compat;
-
-        #[path = "windows/c.rs"]
-        pub mod c;
-    }
-}
-
-cfg_if::cfg_if! {
-    // Fuchsia components default to full backtrace.
-    if #[cfg(target_os = "fuchsia")] {
-        pub const FULL_BACKTRACE_DEFAULT: bool = true;
-    } else {
-        pub const FULL_BACKTRACE_DEFAULT: bool = false;
-    }
-}
+pub const FULL_BACKTRACE_DEFAULT: bool = false;
