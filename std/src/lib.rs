@@ -578,7 +578,6 @@ pub mod alloc;
 mod panicking;
 mod personality;
 
-#[path = "../../backtrace/src/lib.rs"]
 #[allow(dead_code, unused_attributes, fuzzy_provenance_casts)]
 mod backtrace_rs;
 
