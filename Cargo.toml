@@ -7,6 +7,7 @@ description = "A Clone of the Rust Standard Library for FreeRTOS"
 edition = "2021"
 keywords = ["FreeRTOS", "std"]
 categories = ["embedded", "os"]
+readme = "README.md"
 
 [lib]
 crate-type = ["rlib"]
