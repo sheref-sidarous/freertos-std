@@ -100,6 +100,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "panic-abort"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e20e6499bbbc412f280b04a42346b356c6fa0753d5fd22b7bd752ff34c778ee"
+
+[[package]]
 name = "rand"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -152,6 +158,7 @@ dependencies = [
  "libc",
  "miniz_oxide",
  "object",
+ "panic-abort",
  "rand",
  "rand_xorshift",
  "rustc-demangle",

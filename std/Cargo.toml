@@ -10,19 +10,12 @@ edition = "2021"
 crate-type = ["rlib"]
 
 [dependencies]
-#alloc = { path = "../alloc" }
-#alloc = {}
 cfg-if = { version = "1.0" }
-#panic_unwind = { path = "../panic_unwind", optional = true }
-#panic_abort = { path = "../panic_abort" }
 panic-abort = "0.3.2"
-#core = { path = "../core" }
 libc = { version = "0.2.140", default-features = false }
-# compiler_builtins = { path = "../compiler-builtins" }
 compiler_builtins = { version = "0.1.91" }
 unwind = { path = "../unwind" }
 hashbrown = { version = "0.12", default-features = false, features = ["rustc-internal-api"] }
-#std_detect = "0.1.5"
 
 # Dependencies of the `backtrace` crate
 addr2line = { version = "0.17.0", optional = true, default-features = false }
@@ -37,7 +30,6 @@ features = ['read_core', 'elf', 'macho', 'pe', 'unaligned', 'archive']
 [dev-dependencies]
 rand = { version = "0.8.5", default-features = false, features = ["alloc"] }
 rand_xorshift = "0.3.0"
-
 
 [features]
 backtrace = [
