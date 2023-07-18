@@ -1,9 +1,9 @@
 [package]
-name = "std"
+name = "freertos-std"
 version = "0.0.0"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/rust-lang/rust.git"
-description = "The Rust Standard Library"
+repository = "https://github.com/sheref-sidarous/freertos-std"
+description = "A Clone of the Rust Standard Library for FreeRTOS"
 edition = "2021"
 
 [lib]
