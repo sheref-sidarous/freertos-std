@@ -217,7 +217,7 @@
 //
 // Lints:
 #![warn(deprecated_in_future)]
-#![warn(missing_docs)]
+//#![warn(missing_docs)]
 #![warn(missing_debug_implementations)]
 #![allow(explicit_outlives_requirements)]
 #![allow(unused_lifetimes)]
@@ -329,7 +329,7 @@
 //
 // Library features (unwind):
 // tidy-alphabetical-start
-#![feature(panic_unwind)]
+//#![feature(panic_unwind)]
 // tidy-alphabetical-end
 //
 // Only for re-exporting:
@@ -388,10 +388,6 @@ extern crate alloc as alloc_crate;
 #[allow(unused_extern_crates)]
 extern crate libc;
 
-// We always need an unwinder currently for backtraces
-#[doc(masked)]
-#[allow(unused_extern_crates)]
-extern crate unwind;
 
 #[doc(masked)]
 #[allow(unused_extern_crates)]
