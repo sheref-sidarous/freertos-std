@@ -33,6 +33,9 @@ features = ['read_core', 'elf', 'macho', 'pe', 'unaligned', 'archive']
 rand = { version = "0.8.5", default-features = false, features = ["alloc"] }
 rand_xorshift = "0.3.0"
 
+[build-dependencies]
+cc = "1.0.79"
+
 [features]
 backtrace = [
   "gimli-symbolize",
