@@ -1,6 +1,6 @@
 [package]
 name = "freertos-std"
-version = "0.0.0"
+version = "0.0.1"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sheref-sidarous/freertos-std"
 description = "A Clone of the Rust Standard Library for FreeRTOS"

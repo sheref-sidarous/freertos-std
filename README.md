@@ -27,9 +27,8 @@ crate-type = ["staticlib"]
 ```
 
 ### FreeRTOS build system:
-* Include the C file `src/sys/freertos/rust_std_shim.c` from freertos-std into the build system
-* Include the output static library
-* Also you will need to include the `libcore`, `liballoc`, and `librustc_std_workspace_core` Rust runtime libraries
+* Build the C file `src/sys/freertos/rust_std_shim.c` from freertos-std into the build system
+* Link the Rust app built static library
 
 ## Example usage
 Check out [freertos-std-example](https://github.com/sheref-sidarous/freertos-std-example) for an example that builds and runs this library using Qemu
