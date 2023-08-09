@@ -54,6 +54,7 @@ extern "C" {
 
     // semaphore API
     pub fn rust_std_xSemaphoreCreateMutex() -> SemaphoreHandle_t;
+    pub fn rust_std_xSemaphoreCreateBinary() -> SemaphoreHandle_t;
 
     pub fn rust_std_xSemaphoreCreateCounting(
         uxMaxCount : UBaseType_t,

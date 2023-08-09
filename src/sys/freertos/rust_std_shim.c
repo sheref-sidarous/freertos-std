@@ -46,6 +46,11 @@ SemaphoreHandle_t rust_std_xSemaphoreCreateMutex(void)
   return xSemaphoreCreateMutex();
 }
 
+SemaphoreHandle_t rust_std_xSemaphoreCreateBinary(void)
+{
+  return xSemaphoreCreateBinary();
+}
+
 void rust_std_xSemaphoreTake(SemaphoreHandle_t xSemaphore,
                     TickType_t xTicksToWait)
 {
