@@ -59,6 +59,8 @@ pub unsafe fn get(key: Key) -> *mut u8 {
             null_mut(),
             0) as *mut Vec<*mut u8>;
 
+         assert_ne!(list_raw_ptr, null_mut());
+
         &*list_raw_ptr
     };
 

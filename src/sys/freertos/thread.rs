@@ -9,6 +9,7 @@ use crate::sys::freertos::freertos_api;
 use crate::ffi::{c_void, c_char};
 use crate::collections::HashMap;
 use crate::boxed::Box;
+use crate::ptr::null_mut;
 
 pub struct Thread {
     handle : freertos_api::TaskHandle_t,
@@ -20,7 +21,7 @@ struct ThreadDescriptor {
     join_semaphore : freertos_api::SemaphoreHandle_t,
 }
 
-pub const DEFAULT_MIN_STACK_SIZE: usize = 4096;
+pub const DEFAULT_MIN_STACK_SIZE: usize = 1024;
 
 #[allow(non_camel_case_types)]
 type TickType_t = u32;
@@ -28,9 +29,14 @@ type TickType_t = u32;
 
 extern "C" fn thread_entry (arg : *mut c_void) {
 
+    unsafe {
+        // create the Vector for TLS
+        let list : Box<Vec<*mut u8>> = Box::new(Vec::new());
+        freertos_api::rust_std_vTaskSetThreadLocalStoragePointer(
+            null_mut(), 0, Box::into_raw(list) as *mut c_void);
+    }
 
     let mut thread_descriptor = unsafe { Box::from_raw(arg as *mut ThreadDescriptor) };
-
 
     thread_descriptor.is_running = true;
     (thread_descriptor.entry)();
@@ -46,7 +52,12 @@ impl Thread {
     // unsafe: see thread::Builder::spawn_unchecked for safety requirements
     pub unsafe fn new(stack: usize, p: Box<dyn FnOnce()>) -> io::Result<Thread> {
 
-        let join_semaphore = freertos_api::rust_std_xSemaphoreCreateMutex();
+        let join_semaphore = freertos_api::rust_std_xSemaphoreCreateBinary();
+
+        if join_semaphore == core::ptr::null_mut() {
+            // TODO : proper error code here
+            return io::Result::Err(io::Error::from_raw_os_error(0));
+        }
 
         let arg : *mut ThreadDescriptor= Box::into_raw(Box::new(ThreadDescriptor {
             entry: p,
@@ -65,10 +76,7 @@ impl Thread {
 
         if r == freertos_api::pdPASS {
 
-            // create the Hashmap for TLS
-            let list : Box<Vec<*mut u8>> = Box::new(Vec::new());
-            freertos_api::rust_std_vTaskSetThreadLocalStoragePointer(
-                thread_handle, 0, Box::into_raw(list) as *mut c_void);
+
             // Success !
             io::Result::Ok(Thread {
                 handle : thread_handle,
