@@ -24,14 +24,18 @@ Why this file is needed ?
 #error "std Rust needs at least pne thread local storage slot"
 #endif
 
+// Some APIs must be called only when the scheduler is started
+#define SCHEDULER_STARTED_GUARD() configASSERT ( xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED )
 
 
 void rust_std_taskYIELD(void)
 {
+  SCHEDULER_STARTED_GUARD();
   taskYIELD();
 }
 
 void rust_std_vTaskDelete( TaskHandle_t xTask ) {
+  SCHEDULER_STARTED_GUARD();
   vTaskDelete(xTask);
 }
 
@@ -54,11 +58,13 @@ SemaphoreHandle_t rust_std_xSemaphoreCreateBinary(void)
 void rust_std_xSemaphoreTake(SemaphoreHandle_t xSemaphore,
                     TickType_t xTicksToWait)
 {
+  //SCHEDULER_STARTED_GUARD();
   xSemaphoreTake(xSemaphore, xTicksToWait);
 }
 
 void rust_std_xSemaphoreGive(SemaphoreHandle_t xSemaphore)
 {
+  //SCHEDULER_STARTED_GUARD();
   xSemaphoreGive(xSemaphore);
 }
 
