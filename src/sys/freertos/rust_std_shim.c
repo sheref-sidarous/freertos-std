@@ -89,7 +89,7 @@ void * rust_std_pvTaskGetThreadLocalStoragePointer( TaskHandle_t xTaskToQuery,
 }
 
 TickType_t rust_std_xTaskGetTickCount( void ) {
-  return xTaskGetTickCount;
+  return xTaskGetTickCount();
 }
 
 uint32_t rust_std_ticks_to_msec (TickType_t ticks) {
