@@ -48,7 +48,7 @@ impl RwLock {
     #[inline]
     pub fn write(&self) {
         let mut counters = self.counters.lock().unwrap();
-        while counters.writers > 0 && counters.readers > 0{
+        while counters.writers > 0 || counters.readers > 0{
             // there is a pending writer or reader
             counters = self.waiting.wait(counters).unwrap();
         }
@@ -59,7 +59,7 @@ impl RwLock {
     #[inline]
     pub fn try_write(&self) -> bool {
         let mut counters = self.counters.lock().unwrap();
-        if counters.writers > 0 && counters.readers > 0{
+        if counters.writers > 0 || counters.readers > 0{
             // there is a pending writer or reader
             return false;
         } else {
