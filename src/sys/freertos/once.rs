@@ -1,9 +1,10 @@
 use crate::cell::Cell;
 use crate::sync as public;
 use crate::sync::once::ExclusiveState;
+use crate::sync::{Mutex, MutexGuard};
 
 pub struct Once {
-    state: Cell<State>,
+    state: Mutex<State>,
 }
 
 pub struct OnceState {
@@ -20,13 +21,13 @@ enum State {
 }
 
 struct CompletionGuard<'a> {
-    state: &'a Cell<State>,
+    state: MutexGuard<'a, State>,
     set_state_on_drop_to: State,
 }
 
 impl<'a> Drop for CompletionGuard<'a> {
     fn drop(&mut self) {
-        self.state.set(self.set_state_on_drop_to);
+        *self.state = self.set_state_on_drop_to;
     }
 }
 
@@ -37,17 +38,19 @@ impl Once {
     #[inline]
     #[rustc_const_stable(feature = "const_once_new", since = "1.32.0")]
     pub const fn new() -> Once {
-        Once { state: Cell::new(State::Incomplete) }
+        Once { state: Mutex::new(State::Incomplete) }
     }
 
     #[inline]
     pub fn is_completed(&self) -> bool {
-        self.state.get() == State::Complete
+        let state = self.state.lock().unwrap();
+        *state == State::Complete
     }
 
     #[inline]
-    pub(crate) fn state(&mut self) -> ExclusiveState {
-        match self.state.get() {
+    pub(crate) fn state(&self) -> ExclusiveState {
+        let state = self.state.lock().unwrap();
+        match *state {
             State::Incomplete => ExclusiveState::Incomplete,
             State::Poisoned => ExclusiveState::Poisoned,
             State::Complete => ExclusiveState::Complete,
@@ -58,21 +61,22 @@ impl Once {
     #[cold]
     #[track_caller]
     pub fn call(&self, ignore_poisoning: bool, f: &mut impl FnMut(&public::OnceState)) {
-        let state = self.state.get();
-        match state {
+        let mut state = self.state.lock().unwrap();
+        let is_poisoned =  *state == State::Poisoned;
+        match *state {
             State::Poisoned if !ignore_poisoning => {
                 // Panic to propagate the poison.
                 panic!("Once instance has previously been poisoned");
             }
             State::Incomplete | State::Poisoned => {
-                self.state.set(State::Running);
+                *state = State::Running;
                 // `guard` will set the new state on drop.
                 let mut guard =
-                    CompletionGuard { state: &self.state, set_state_on_drop_to: State::Poisoned };
+                    CompletionGuard { state: state, set_state_on_drop_to: State::Poisoned };
                 // Run the function, letting it know if we're poisoned or not.
                 let f_state = public::OnceState {
                     inner: OnceState {
-                        poisoned: state == State::Poisoned,
+                        poisoned: is_poisoned,
                         set_state_to: Cell::new(State::Complete),
                     },
                 };
