@@ -1,7 +1,12 @@
 use crate::io;
+use crate::cell::OnceCell;
+use cortex_m_semihosting::hio;
+use core::ops::Deref;
 
 pub struct Stdin;
-pub struct Stdout;
+pub struct Stdout {
+    host_stdout : OnceCell<hio::HostStream>,
+}
 pub struct Stderr;
 
 extern "C" {
@@ -22,16 +27,20 @@ impl io::Read for Stdin {
 
 impl Stdout {
     pub const fn new() -> Stdout {
-        Stdout
+        Stdout {
+            host_stdout : OnceCell::new(),
+        }
     }
 }
 
 impl io::Write for Stdout {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        unsafe {
-            uart_write(buf.as_ptr(), buf.len());
+        _ = self.host_stdout.get_or_init( || { hio::hstdout().unwrap() });
+        let host_stdout = self.host_stdout.get_mut().unwrap();
+        match host_stdout.write_all(buf) {
+            Ok(()) => Ok(buf.len()),
+            Err(()) => Err(io::Error::new(io::ErrorKind::Other, "semihosting write failed")),
         }
-        Ok(buf.len())
     }
 
     fn flush(&mut self) -> io::Result<()> {
