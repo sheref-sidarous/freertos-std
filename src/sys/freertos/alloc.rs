@@ -31,7 +31,7 @@ unsafe impl GlobalAlloc for System {
     #[inline]
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
 
-        ALLOC_TRACE.send_trace("Hello :)\n");
+        //ALLOC_TRACE.send_trace("Hello :)\n");
 
         let size_to_alloc = layout.size() + layout.align();
         let allocated_ptr = unsafe {
