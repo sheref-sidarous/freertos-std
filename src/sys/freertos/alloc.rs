@@ -1,8 +1,28 @@
 use crate::alloc::{GlobalAlloc, Layout, System};
+use crate::sys::freertos::semihosting;
+use crate::cell::OnceCell;
+
+struct AllocTracer {
+    inner : OnceCell<semihosting::HostStream>,
+}
+
+unsafe impl Sync for AllocTracer {}
+
+static ALLOC_TRACE : AllocTracer = AllocTracer {inner : OnceCell::new() };
 
 extern "C" {
     pub fn pvPortMalloc( xSize : u32 ) -> *mut u8 ;
     pub fn vPortFree( pv : *mut u8 );
+}
+
+impl AllocTracer {
+    fn send_trace(&self, trace : &str) {
+        let host_stream = self.inner.get_or_init( || {
+            semihosting::open("malloc_log.log", 0).unwrap()
+        });
+        //let host_stream = self.inner.get_mut().unwrap();
+        host_stream.write_all(trace.as_bytes()).unwrap();
+    }
 }
 
 
@@ -10,6 +30,9 @@ extern "C" {
 unsafe impl GlobalAlloc for System {
     #[inline]
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+
+        ALLOC_TRACE.send_trace("Hello :)\n");
+
         let size_to_alloc = layout.size() + layout.align();
         let allocated_ptr = unsafe {
             pvPortMalloc(size_to_alloc as u32)

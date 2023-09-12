@@ -29,3 +29,5 @@ mod common;
 pub use common::*;
 
 mod freertos_api;
+
+mod semihosting;
