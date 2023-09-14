@@ -101,3 +101,16 @@ TickType_t rust_std_xTaskGetTickCount( void ) {
 uint32_t rust_std_ticks_to_msec (TickType_t ticks) {
   return ticks / portTICK_PERIOD_MS;
 }
+
+int rust_std_get_portBYTE_ALIGNMENT () {
+  return portBYTE_ALIGNMENT;
+}
+
+
+void* rust_std_pvPortMalloc( size_t xSize ) {
+  return pvPortMalloc(xSize);
+}
+
+void rust_std_vPortFree( void* pv ) {
+  vPortFree(pv);
+}
