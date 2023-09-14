@@ -1,29 +1,10 @@
 use crate::alloc::{GlobalAlloc, Layout, System};
-use crate::sys::freertos::semihosting;
-use crate::cell::OnceCell;
 
 use crate::sys::freertos::freertos_api;
 
-struct AllocTracer {
-    inner : OnceCell<semihosting::HostStream>,
-}
 
-unsafe impl Sync for AllocTracer {}
-
-static ALLOC_TRACE : AllocTracer = AllocTracer {inner : OnceCell::new() };
-
-impl AllocTracer {
-    fn send_trace(&self, trace : &str) {
-        let host_stream = self.inner.get_or_init( || {
-            semihosting::open("malloc_log.log", 0).unwrap()
-        });
-        //let host_stream = self.inner.get_mut().unwrap();
-        host_stream.write_all(trace.as_bytes()).unwrap();
-    }
-}
 
 fn can_use_system_alignment(align_req : usize) -> bool {
-
     let system_alignment = unsafe{ freertos_api::rust_std_get_portBYTE_ALIGNMENT() };
 
     if system_alignment >= align_req && align_req % system_alignment == 0 {
