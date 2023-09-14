@@ -2,6 +2,8 @@ use crate::alloc::{GlobalAlloc, Layout, System};
 use crate::sys::freertos::semihosting;
 use crate::cell::OnceCell;
 
+use crate::sys::freertos::freertos_api;
+
 struct AllocTracer {
     inner : OnceCell<semihosting::HostStream>,
 }
@@ -9,11 +11,6 @@ struct AllocTracer {
 unsafe impl Sync for AllocTracer {}
 
 static ALLOC_TRACE : AllocTracer = AllocTracer {inner : OnceCell::new() };
-
-extern "C" {
-    pub fn pvPortMalloc( xSize : u32 ) -> *mut u8 ;
-    pub fn vPortFree( pv : *mut u8 );
-}
 
 impl AllocTracer {
     fn send_trace(&self, trace : &str) {
@@ -25,17 +22,34 @@ impl AllocTracer {
     }
 }
 
+fn can_use_system_alignment(align_req : usize) -> bool {
+
+    let system_alignment = unsafe{ freertos_api::rust_std_get_portBYTE_ALIGNMENT() };
+
+    if system_alignment >= align_req && align_req % system_alignment == 0 {
+        true
+    } else {
+        false
+    }
+
+}
+
 
 #[stable(feature = "alloc_system_type", since = "1.28.0")]
 unsafe impl GlobalAlloc for System {
     #[inline]
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
 
-        //ALLOC_TRACE.send_trace("Hello :)\n");
+        if can_use_system_alignment(layout.align()) {
+            // system allocator can directly satisfy the alignment requirement,
+            // no need for manual alignment
+            return unsafe { freertos_api::rust_std_pvPortMalloc(layout.size() as u32) };
+        }
 
+        // Manual alignment is necessary
         let size_to_alloc = layout.size() + layout.align();
         let allocated_ptr = unsafe {
-            pvPortMalloc(size_to_alloc as u32)
+            freertos_api::rust_std_pvPortMalloc(size_to_alloc as u32)
         };
 
         // find padding and aligned_pointer
@@ -53,11 +67,19 @@ unsafe impl GlobalAlloc for System {
     }
 
     #[inline]
-    unsafe fn dealloc(&self, aligned_ptr: *mut u8, _layout: Layout) {
+    unsafe fn dealloc(&self, aligned_ptr: *mut u8, layout: Layout) {
+
+        let ptr_to_dealloc = match can_use_system_alignment(layout.align()) {
+            true => aligned_ptr,
+            false => {
+                let padding = *aligned_ptr.offset(-1) as isize;
+                let original_ptr = aligned_ptr.offset(-1 * padding);
+                original_ptr
+            }
+        };
+
         unsafe {
-            let padding = *aligned_ptr.offset(-1) as isize;
-            let original_ptr = aligned_ptr.offset(-1 * padding);
-            vPortFree(original_ptr);
+            freertos_api::rust_std_vPortFree(ptr_to_dealloc);
         }
     }
 

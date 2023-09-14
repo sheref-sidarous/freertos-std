@@ -88,4 +88,9 @@ extern "C" {
 
     pub fn rust_std_ticks_to_msec (ticks : TickType_t) -> u32;
 
+    pub fn rust_std_get_portBYTE_ALIGNMENT () -> usize;
+
+    pub fn rust_std_pvPortMalloc( xSize : u32 ) -> *mut u8 ;
+    pub fn rust_std_vPortFree( pv : *mut u8 );
+
 }
