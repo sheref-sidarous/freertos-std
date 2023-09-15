@@ -5,9 +5,47 @@ use core::ops::Deref;
 
 pub struct Stdin;
 pub struct Stdout {
-    host_stdout : OnceCell<hio::HostStream>,
+    inner : HostOutImpl,
 }
-pub struct Stderr;
+pub struct Stderr {
+    inner : HostOutImpl,
+}
+
+struct HostOutImpl {
+    host_stdout : Option<hio::HostStream>,
+}
+
+impl HostOutImpl {
+    const fn new() -> HostOutImpl {
+        HostOutImpl {
+            host_stdout : None,
+        }
+    }
+
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let mut host_stdout = match self.host_stdout {
+            None => {
+                let new_stream = match hio::hstdout() {
+                    Ok(x) => x,
+                    _ => {
+                        return Err(io::Error::new(io::ErrorKind::Other, "semihosting creation failed"));
+                    },
+                };
+                self.host_stdout = Some(new_stream);
+                new_stream
+            },
+            Some(x) => x,
+        };
+        match host_stdout.write_all(buf) {
+            Ok(()) => Ok(buf.len()),
+            Err(()) => Err(io::Error::new(io::ErrorKind::Other, "semihosting write failed")),
+        }
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
 
 extern "C" {
     fn uart_write ( buff : *const u8, buff_len : usize);
@@ -28,39 +66,36 @@ impl io::Read for Stdin {
 impl Stdout {
     pub const fn new() -> Stdout {
         Stdout {
-            host_stdout : OnceCell::new(),
+            inner : HostOutImpl::new(),
         }
     }
 }
 
 impl io::Write for Stdout {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        _ = self.host_stdout.get_or_init( || { hio::hstdout().unwrap() });
-        let host_stdout = self.host_stdout.get_mut().unwrap();
-        match host_stdout.write_all(buf) {
-            Ok(()) => Ok(buf.len()),
-            Err(()) => Err(io::Error::new(io::ErrorKind::Other, "semihosting write failed")),
-        }
+        self.inner.write(buf)
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        Ok(())
+        self.inner.flush()
     }
 }
 
 impl Stderr {
     pub const fn new() -> Stderr {
-        Stderr
+        Stderr {
+            inner : HostOutImpl::new(),
+        }
     }
 }
 
 impl io::Write for Stderr {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        Ok(buf.len())
+        self.inner.write(buf)
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        Ok(())
+        self.inner.flush()
     }
 }
 
