@@ -367,6 +367,7 @@
 #![feature(const_maybe_uninit_uninit_array)]
 #![feature(const_waker)]
 #![feature(thread_local_internals)]
+#![feature(cfg_target_abi)]
 // tidy-alphabetical-end
 //
 #![default_lib_allocator]
