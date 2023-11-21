@@ -12,4 +12,4 @@
 
 mod dwarf;
 mod gcc;
-mod libunwind;
+pub mod libunwind;

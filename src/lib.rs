@@ -372,6 +372,12 @@
 //
 #![default_lib_allocator]
 
+// extra feature brought in with panic_unwind lib
+//#![unstable(feature = "panic_unwind", issue = "32837")]4
+#![feature(abi_thiscall)]
+#![panic_runtime]
+#![feature(panic_runtime)]
+
 // Explicitly import the prelude. The compiler uses this same unstable attribute
 // to import the prelude implicitly when building crates that depend on std.
 #[prelude_import]
@@ -655,3 +661,7 @@ pub(crate) mod test_helpers {
         rand::SeedableRng::from_seed(seed)
     }
 }
+
+
+
+mod panic_unwind;
