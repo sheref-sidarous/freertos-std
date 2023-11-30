@@ -29,12 +29,13 @@ type TickType_t = u32;
 
 extern "C" fn thread_entry (arg : *mut c_void) {
 
-    unsafe {
+    let list_kept_ptr = unsafe {
         // create the Vector for TLS
-        let list : Box<Vec<*mut u8>> = Box::new(Vec::new());
+        let list : *mut Vec<*mut u8> = Box::into_raw(Box::new(Vec::new()));
         freertos_api::rust_std_vTaskSetThreadLocalStoragePointer(
-            null_mut(), 0, Box::into_raw(list) as *mut c_void);
-    }
+            null_mut(), 0, list.clone() as *mut c_void);
+        list
+    };
 
     let mut thread_descriptor = unsafe { Box::from_raw(arg as *mut ThreadDescriptor) };
 
@@ -45,6 +46,7 @@ extern "C" fn thread_entry (arg : *mut c_void) {
     unsafe {
         freertos_api::rust_std_xSemaphoreGive(thread_descriptor.join_semaphore);
         freertos_api::rust_std_vTaskDelete( core::ptr::null_mut() );
+        _ = Box::from_raw(list_kept_ptr)
     }
 }
 
