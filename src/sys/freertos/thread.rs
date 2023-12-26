@@ -17,7 +17,6 @@ pub struct Thread {
 }
 struct ThreadDescriptor {
     entry : Box<dyn FnOnce()>,
-    is_running : bool,
     join_semaphore : freertos_api::SemaphoreHandle_t,
 }
 
@@ -29,25 +28,30 @@ type TickType_t = u32;
 
 extern "C" fn thread_entry (arg : *mut c_void) {
 
-    let list_kept_ptr = unsafe {
-        // create the Vector for TLS
-        let list : *mut Vec<*mut u8> = Box::into_raw(Box::new(Vec::new()));
-        freertos_api::rust_std_vTaskSetThreadLocalStoragePointer(
-            null_mut(), 0, list.clone() as *mut c_void);
-        list
-    };
+    {
 
-    let mut thread_descriptor = unsafe { Box::from_raw(arg as *mut ThreadDescriptor) };
+        let list_kept_ptr = unsafe {
+            // create the Vector for TLS
+            let list : *mut Vec<*mut u8> = Box::into_raw(Box::new(Vec::new()));
+            freertos_api::rust_std_vTaskSetThreadLocalStoragePointer(
+                null_mut(), 0, list.clone() as *mut c_void);
+            list
+        };
 
-    thread_descriptor.is_running = true;
-    (thread_descriptor.entry)();
-    thread_descriptor.is_running = false;
+        let mut thread_descriptor = unsafe { Box::from_raw(arg as *mut ThreadDescriptor) };
 
-    unsafe {
-        freertos_api::rust_std_xSemaphoreGive(thread_descriptor.join_semaphore);
-        freertos_api::rust_std_vTaskDelete( core::ptr::null_mut() );
-        _ = Box::from_raw(list_kept_ptr)
+        (thread_descriptor.entry)();
+
+        unsafe {
+            freertos_api::rust_std_xSemaphoreGive(thread_descriptor.join_semaphore);
+            let tls_list : Box<Vec<*mut u8>> = Box::from_raw(list_kept_ptr);
+            for ptr in *tls_list {
+                freertos_api::rust_std_vPortFree(ptr);
+            }
+        }
     }
+
+    unsafe { freertos_api::rust_std_vTaskDelete( core::ptr::null_mut() );}
 }
 
 impl Thread {
@@ -63,7 +67,6 @@ impl Thread {
 
         let arg : *mut ThreadDescriptor= Box::into_raw(Box::new(ThreadDescriptor {
             entry: p,
-            is_running : false,
             join_semaphore : join_semaphore.clone(),
         }));
 

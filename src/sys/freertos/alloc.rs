@@ -7,7 +7,7 @@ use crate::sys::freertos::freertos_api;
 fn can_use_system_alignment(align_req : usize) -> bool {
     let system_alignment = unsafe{ freertos_api::rust_std_get_portBYTE_ALIGNMENT() };
 
-    if system_alignment >= align_req && align_req % system_alignment == 0 {
+    if system_alignment >= align_req && system_alignment % align_req == 0 {
         true
     } else {
         false
