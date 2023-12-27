@@ -10,6 +10,7 @@ use crate::ffi::{c_void, c_char};
 use crate::collections::HashMap;
 use crate::boxed::Box;
 use crate::ptr::null_mut;
+use super::thread_local_key::thread_exit_tls_cleaner;
 
 pub struct Thread {
     handle : freertos_api::TaskHandle_t,
@@ -45,9 +46,8 @@ extern "C" fn thread_entry (arg : *mut c_void) {
         unsafe {
             freertos_api::rust_std_xSemaphoreGive(thread_descriptor.join_semaphore);
             let tls_list : Box<Vec<*mut u8>> = Box::from_raw(list_kept_ptr);
-            for ptr in *tls_list {
-                freertos_api::rust_std_vPortFree(ptr);
-            }
+            thread_exit_tls_cleaner(tls_list);
+
         }
     }
 
@@ -80,8 +80,6 @@ impl Thread {
             &mut thread_handle as *mut freertos_api::TaskHandle_t); /* get the handle back here */
 
         if r == freertos_api::pdPASS {
-
-
             // Success !
             io::Result::Ok(Thread {
                 handle : thread_handle,
@@ -90,7 +88,6 @@ impl Thread {
         } else {
             io::Result::Err(io::Error::from_raw_os_error(r))
         }
-
     }
 
     pub fn yield_now() {

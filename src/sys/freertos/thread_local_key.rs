@@ -5,7 +5,28 @@ use crate::vec::Vec;
 use crate::collections::HashMap;
 use crate::sys::freertos::freertos_api;
 
+// TODO: this is a better impl
+/* pub struct Key(usize);
+
+impl Key {
+    fn new(vec_index: usize) -> Self{
+        Key(vec_index + 1)
+    }
+
+    fn into_vec_index(&self) -> usize{
+        self.0 - 1
+    }
+} */
+
 pub type Key = usize;
+
+fn index_to_key(vec_index: usize) -> Key{
+    vec_index + 1
+}
+
+fn key_to_index(key : Key) -> usize{
+    key- 1
+}
 
 struct DestructorsWrapper {
     inner: RefCell<Vec<Option<unsafe extern "C" fn(*mut u8)>>>,
@@ -46,15 +67,13 @@ pub unsafe fn create(dtor: Option<unsafe extern "C" fn(*mut u8)>) -> Key {
     DESTRUCTORS.lock();
     let mut destructors = DESTRUCTORS.borrow_inner_mut();
     destructors.push(dtor);
-    let ret =  destructors.len();
+    let new_item_index =  destructors.len() - 1;
     DESTRUCTORS.unlock();
 
     // returning an index would'v been simpler, but 0 has a special meaning as posix's KEY_SENTVAL
     // destructors.len() -1
 
-    ret
-
-
+    index_to_key(new_item_index)
 }
 
 #[inline]
@@ -70,7 +89,7 @@ pub unsafe fn set(key: Key, value: *mut u8) {
     };
 
     // remember, index is actually off-by-one to avoid the key value of Zero
-    let index = key -1;
+    let index = key_to_index(key);
 
     if index >=  list.len() {
         // need to expand the Vector
@@ -96,7 +115,7 @@ pub unsafe fn get(key: Key) -> *mut u8 {
     };
 
     // remember, index is actually off-by-one to avoid the key value of Zero
-    let index = key -1;
+    let index = key_to_index(key);
 
     if index >= list.len() {
         null_mut()
@@ -109,11 +128,25 @@ pub unsafe fn get(key: Key) -> *mut u8 {
 pub unsafe fn destroy(key: Key) {
 
     DESTRUCTORS.lock();
-    let mut destructors = DESTRUCTORS.borrow_inner_mut();
-    let dtor = destructors.get(key).unwrap();
-    if let Some(_function) = dtor {
-        // TODO: this should actually loop on all local threads and call function for any non-null key value.
-        //function(null_mut());
+    let destructors = DESTRUCTORS.borrow_inner_mut();
+    let dtor = destructors.get(key_to_index(key)).unwrap();
+    let value = get(key);
+    if let Some(function) = dtor && value != null_mut() {
+        function(value);
     }
+    DESTRUCTORS.unlock();
+}
+
+pub(crate) unsafe fn thread_exit_tls_cleaner(list : Box<Vec<*mut u8>>) {
+
+    DESTRUCTORS.lock();
+    let destructors = DESTRUCTORS.borrow_inner_mut();
+    for (index, ptr) in (*list).into_iter().enumerate() {
+        let dtor = destructors.get(index).unwrap();
+        if let Some(function) = dtor && ptr != null_mut() {
+            function(ptr);
+        }
+    }
+
     DESTRUCTORS.unlock();
 }
