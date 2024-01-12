@@ -65,9 +65,12 @@ static DESTRUCTORS : DestructorsWrapper = DestructorsWrapper::new();
 #[inline]
 pub unsafe fn create(dtor: Option<unsafe extern "C" fn(*mut u8)>) -> Key {
     DESTRUCTORS.lock();
-    let mut destructors = DESTRUCTORS.borrow_inner_mut();
-    destructors.push(dtor);
-    let new_item_index =  destructors.len() - 1;
+    let new_item_index = {
+        let mut destructors = DESTRUCTORS.borrow_inner_mut();
+        destructors.push(dtor);
+
+        destructors.len() - 1
+    };
     DESTRUCTORS.unlock();
 
     // returning an index would'v been simpler, but 0 has a special meaning as posix's KEY_SENTVAL
@@ -97,7 +100,7 @@ pub unsafe fn set(key: Key, value: *mut u8) {
     }
     list[index] = value;
 
-    // As the vector is resized, can it change its base address ?
+    // TODO: As the vector is resized, can it change its base address ?
     // I hear that Rust can do that, and I probably need a Pin<..>
     assert_eq!(list_raw_ptr, list as *mut Vec<*mut u8>);
 }
@@ -128,11 +131,13 @@ pub unsafe fn get(key: Key) -> *mut u8 {
 pub unsafe fn destroy(key: Key) {
 
     DESTRUCTORS.lock();
-    let destructors = DESTRUCTORS.borrow_inner_mut();
-    let dtor = destructors.get(key_to_index(key)).unwrap();
-    let value = get(key);
-    if let Some(function) = dtor && value != null_mut() {
-        function(value);
+    {
+        let destructors = DESTRUCTORS.borrow_inner_mut();
+        let dtor = destructors.get(key_to_index(key)).unwrap();
+        let value = get(key);
+        if let Some(function) = dtor && value != null_mut() {
+            function(value);
+        }
     }
     DESTRUCTORS.unlock();
 }
@@ -140,13 +145,14 @@ pub unsafe fn destroy(key: Key) {
 pub(crate) unsafe fn thread_exit_tls_cleaner(list : Box<Vec<*mut u8>>) {
 
     DESTRUCTORS.lock();
-    let destructors = DESTRUCTORS.borrow_inner_mut();
-    for (index, ptr) in (*list).into_iter().enumerate() {
-        let dtor = destructors.get(index).unwrap();
-        if let Some(function) = dtor && ptr != null_mut() {
-            function(ptr);
+    {
+        let destructors = DESTRUCTORS.borrow_inner_mut();
+        for (index, ptr) in (*list).into_iter().enumerate() {
+            let dtor = destructors.get(index).unwrap();
+            if let Some(function) = dtor && ptr != null_mut() {
+                function(ptr);
+            }
         }
     }
-
     DESTRUCTORS.unlock();
 }

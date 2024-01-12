@@ -117,6 +117,6 @@ void* rust_std_pvPortMalloc( size_t xSize ) {
   return ptr;
 }
 
-void rust_std_vPortFree( void* pv ) {
+void __attribute__ ((noinline)) rust_std_vPortFree( void* pv ) {
   vPortFree(pv);
 }
