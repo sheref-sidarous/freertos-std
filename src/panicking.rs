@@ -738,7 +738,9 @@ pub fn rust_panic_without_hook(payload: Box<dyn Any + Send>) -> ! {
 #[inline(never)]
 #[cfg_attr(not(test), rustc_std_internal_symbol)]
 fn rust_panic(_msg: &mut dyn BoxMeUp) -> ! {
-    //let code = unsafe { __rust_start_panic(msg) };
-    //rtabort!("failed to initiate panic, error {code}")
-    loop {}
+    extern "C" {
+        fn rust_std_vAssertCalled() -> !;
+    }
+
+    unsafe {rust_std_vAssertCalled()}
 }

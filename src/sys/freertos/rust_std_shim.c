@@ -120,3 +120,7 @@ void* rust_std_pvPortMalloc( size_t xSize ) {
 void __attribute__ ((noinline)) rust_std_vPortFree( void* pv ) {
   vPortFree(pv);
 }
+
+void rust_std_vAssertCalled (void) {
+  vAssertCalled("rust.rs", 0);
+}
