@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests;
 
+extern crate alloc;
+
 use crate::borrow::{Borrow, Cow};
 use crate::cmp;
 use crate::collections::TryReserveError;
@@ -1257,6 +1259,23 @@ impl fmt::Debug for OsStr {
 impl OsStr {
     pub(crate) fn display(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.inner, formatter)
+    }
+}
+
+#[unstable(feature = "slice_concat_ext", issue = "27747")]
+impl<S: Borrow<OsStr>> alloc::slice::Join<&OsStr> for [S] {
+    type Output = OsString;
+
+    fn join(slice: &Self, sep: &OsStr) -> OsString {
+        let Some((first, suffix)) = slice.split_first() else {
+            return OsString::new();
+        };
+        let first_owned = first.borrow().to_owned();
+        suffix.iter().fold(first_owned, |mut a, b| {
+            a.push(sep);
+            a.push(b.borrow());
+            a
+        })
     }
 }
 

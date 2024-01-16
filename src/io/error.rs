@@ -16,6 +16,10 @@ use crate::fmt;
 use crate::result;
 use crate::sys;
 
+
+use alloc_crate as alloc;
+
+
 /// A specialized [`Result`] type for I/O operations.
 ///
 /// This type is broadly used across [`std::io`] for any operation which may
@@ -72,6 +76,14 @@ pub struct Error {
 impl fmt::Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(&self.repr, f)
+    }
+}
+
+#[stable(feature = "rust1", since = "1.0.0")]
+impl From<alloc::ffi::NulError> for Error {
+    /// Converts a [`alloc::ffi::NulError`] into a [`Error`].
+    fn from(_: alloc::ffi::NulError) -> Error {
+        const_io_error!(ErrorKind::InvalidInput, "data provided contains a nul byte")
     }
 }
 
