@@ -192,16 +192,7 @@
 
 #![cfg_attr(not(feature = "restricted-std"), stable(feature = "rust1", since = "1.0.0"))]
 #![cfg_attr(feature = "restricted-std", unstable(feature = "restricted_std", issue = "none"))]
-    html_playground_url = "https://play.rust-lang.org/",
-    issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
-    test(no_crate_inject, attr(deny(warnings))),
-    test(attr(allow(dead_code, deprecated, unused_variables, unused_mut)))
-)]
-    not(test),
-    not(any(test, bootstrap)),
-    no_global_oom_handling,
-    not(no_global_oom_handling)
-))]
+
 // To run std tests without x.py without ending up with two copies of std, Miri needs to be
 // able to "empty" this crate. See <https://github.com/rust-lang/miri-test-libstd/issues/4>.
 // rustc itself never sets the feature, so this line has no affect there.
