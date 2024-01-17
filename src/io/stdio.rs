@@ -983,7 +983,6 @@ impl fmt::Debug for StderrLock<'_> {
         and may disappear in the future",
     issue = "none"
 )]
-#[doc(hidden)]
 pub fn set_output_capture(sink: Option<LocalStream>) -> Option<LocalStream> {
     if sink.is_none() && !OUTPUT_CAPTURE_USED.load(Ordering::Relaxed) {
         // OUTPUT_CAPTURE is definitely None since OUTPUT_CAPTURE_USED is false.
@@ -1089,7 +1088,6 @@ impl_is_terminal!(File, Stdin, StdinLock<'_>, Stdout, StdoutLock<'_>, Stderr, St
     reason = "implementation detail which may disappear or be replaced at any time",
     issue = "none"
 )]
-#[doc(hidden)]
 #[cfg(not(test))]
 pub fn _print(args: fmt::Arguments<'_>) {
     print_to(args, stdout, "stdout");
@@ -1100,7 +1098,6 @@ pub fn _print(args: fmt::Arguments<'_>) {
     reason = "implementation detail which may disappear or be replaced at any time",
     issue = "none"
 )]
-#[doc(hidden)]
 #[cfg(not(test))]
 pub fn _eprint(args: fmt::Arguments<'_>) {
     print_to(args, stderr, "stderr");

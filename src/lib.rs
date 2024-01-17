@@ -192,13 +192,11 @@
 
 #![cfg_attr(not(feature = "restricted-std"), stable(feature = "rust1", since = "1.0.0"))]
 #![cfg_attr(feature = "restricted-std", unstable(feature = "restricted_std", issue = "none"))]
-#![doc(
     html_playground_url = "https://play.rust-lang.org/",
     issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
     test(no_crate_inject, attr(deny(warnings))),
     test(attr(allow(dead_code, deprecated, unused_variables, unused_mut)))
 )]
-#![doc(cfg_hide(
     not(test),
     not(any(test, bootstrap)),
     no_global_oom_handling,
@@ -384,12 +382,10 @@ extern crate test;
 #[allow(unused_imports)] // macros from `alloc` are not used on all platforms
 #[macro_use]
 extern crate alloc as alloc_crate;
-#[doc(masked)]
 #[allow(unused_extern_crates)]
 extern crate libc;
 
 
-#[doc(masked)]
 #[allow(unused_extern_crates)]
 #[cfg(feature = "miniz_oxide")]
 extern crate miniz_oxide;
@@ -539,13 +535,11 @@ pub mod time;
 pub mod task {
     //! Types and Traits for working with asynchronous tasks.
 
-    #[doc(inline)]
     #[stable(feature = "futures_api", since = "1.36.0")]
     pub use core::task::*;
 
     extern crate alloc;
 
-    #[doc(inline)]
     #[stable(feature = "wake_trait", since = "1.51.0")]
     pub use alloc::task::*;
 }
@@ -558,7 +552,6 @@ pub mod arch {
     // targets available.
     // See https://github.com/rust-lang/rust/pull/57808#issuecomment-457390549 for
     // more information.
-    #[doc(no_inline)] // Note (#82861): required for correct documentation
     pub use core::arch::*;
 
 }

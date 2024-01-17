@@ -404,7 +404,6 @@
 #[stable(feature = "rust1", since = "1.0.0")]
 // FIXME(#82080) The deprecation here is only theoretical, and does not actually produce a warning.
 #[deprecated(note = "moved to `std::ops::Bound`", since = "1.26.0")]
-#[doc(hidden)]
 pub use crate::ops::Bound;
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -417,10 +416,8 @@ pub use alloc_crate::collections::{BTreeMap, BTreeSet, BinaryHeap};
 pub use alloc_crate::collections::{LinkedList, VecDeque};
 
 #[stable(feature = "rust1", since = "1.0.0")]
-#[doc(inline)]
 pub use self::hash_map::HashMap;
 #[stable(feature = "rust1", since = "1.0.0")]
-#[doc(inline)]
 pub use self::hash_set::HashSet;
 
 #[stable(feature = "try_reserve", since = "1.57.0")]

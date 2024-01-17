@@ -10,7 +10,6 @@ use crate::ptr::{eq, read_unaligned};
 use crate::slice::from_raw_parts;
 use crate::sys::net::Socket;
 
-// FIXME(#43348): Make libc adapt #[doc(cfg(...))] so we don't need these fake definitions here?
 #[cfg(all(doc, not(target_os = "linux"), not(target_os = "android"), not(target_os = "netbsd")))]
 #[allow(non_camel_case_types)]
 mod libc {
@@ -210,7 +209,6 @@ pub struct SocketCred(libc::sockcred);
 #[derive(Clone)]
 pub struct SocketCred(libc::sockcred2);
 
-#[doc(cfg(any(target_os = "android", target_os = "linux")))]
 #[cfg(any(target_os = "android", target_os = "linux"))]
 impl SocketCred {
     /// Create a Unix credential struct.

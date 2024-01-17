@@ -3,8 +3,6 @@
 // having to have `CARGO_PKG_NAME` set, but conceptually they should always be the same.
 #[cfg_attr(bootstrap, doc(primitive = "bool"))]
 #[cfg_attr(not(bootstrap), rustc_doc_primitive = "bool")]
-#[doc(alias = "true")]
-#[doc(alias = "false")]
 /// The boolean type.
 ///
 /// The `bool` represents a value, which could only be either [`true`] or [`false`]. If you cast
@@ -66,7 +64,6 @@ mod prim_bool {}
 
 #[cfg_attr(bootstrap, doc(primitive = "never"))]
 #[cfg_attr(not(bootstrap), rustc_doc_primitive = "never")]
-#[doc(alias = "!")]
 //
 /// The `!` type, also called "never".
 ///
@@ -108,7 +105,6 @@ mod prim_bool {}
 /// behaviour of the `!` type - expressions with type `!` will coerce into any other type.
 ///
 /// [`u32`]: prim@u32
-#[doc = concat!("[`exit`]: ", include_str!("../primitive_docs/process_exit.md"))]
 ///
 /// # `!` and generics
 ///
@@ -193,7 +189,6 @@ mod prim_bool {}
 /// because `!` coerces to `Result<!, ConnectionError>` automatically.
 ///
 /// [`String::from_str`]: str::FromStr::from_str
-#[doc = concat!("[`String`]: ", include_str!("../primitive_docs/string_string.md"))]
 /// [`FromStr`]: str::FromStr
 ///
 /// # `!` and traits
@@ -269,7 +264,6 @@ mod prim_bool {}
 /// `impl` for this which simply panics, but the same is true for any type (we could `impl
 /// Default` for (eg.) [`File`] by just making [`default()`] panic.)
 ///
-#[doc = concat!("[`File`]: ", include_str!("../primitive_docs/fs_file.md"))]
 /// [`Debug`]: fmt::Debug
 /// [`default()`]: Default::default
 ///
@@ -358,7 +352,6 @@ mod prim_never {}
 /// assert_eq!(5, s.len() * std::mem::size_of::<u8>());
 /// ```
 ///
-#[doc = concat!("[`String`]: ", include_str!("../primitive_docs/string_string.md"))]
 ///
 /// As always, remember that a human intuition for 'character' might not map to
 /// Unicode's definitions. For example, despite looking similar, the 'é'
@@ -403,9 +396,6 @@ mod prim_char {}
 
 #[cfg_attr(bootstrap, doc(primitive = "unit"))]
 #[cfg_attr(not(bootstrap), rustc_doc_primitive = "unit")]
-#[doc(alias = "(")]
-#[doc(alias = ")")]
-#[doc(alias = "()")]
 //
 /// The `()` type, also called "unit".
 ///
@@ -445,7 +435,6 @@ mod prim_unit {}
 
 // Required to make auto trait impls render.
 // See src/librustdoc/passes/collect_trait_impls.rs:collect_trait_impls
-#[doc(hidden)]
 impl () {}
 
 // Fake impl that's only really used for docs.
@@ -466,10 +455,6 @@ impl Copy for () {
 
 #[cfg_attr(bootstrap, doc(primitive = "pointer"))]
 #[cfg_attr(not(bootstrap), rustc_doc_primitive = "pointer")]
-#[doc(alias = "ptr")]
-#[doc(alias = "*")]
-#[doc(alias = "*const")]
-#[doc(alias = "*mut")]
 //
 /// Raw, unsafe pointers, `*const T`, and `*mut T`.
 ///
@@ -576,16 +561,12 @@ impl Copy for () {
 /// [`null_mut`]: ptr::null_mut
 /// [`is_null`]: pointer::is_null
 /// [`offset`]: pointer::offset
-#[doc = concat!("[`into_raw`]: ", include_str!("../primitive_docs/box_into_raw.md"))]
 /// [`write`]: ptr::write
 #[stable(feature = "rust1", since = "1.0.0")]
 mod prim_pointer {}
 
 #[cfg_attr(bootstrap, doc(primitive = "array"))]
 #[cfg_attr(not(bootstrap), rustc_doc_primitive = "array")]
-#[doc(alias = "[]")]
-#[doc(alias = "[T;N]")] // unfortunately, rustdoc doesn't have fuzzy search for aliases
-#[doc(alias = "[T; N]")]
 /// A fixed-size array, denoted `[T; N]`, for the element type, `T`, and the
 /// non-negative compile-time constant size, `N`.
 ///
@@ -785,9 +766,6 @@ mod prim_array {}
 
 #[cfg_attr(bootstrap, doc(primitive = "slice"))]
 #[cfg_attr(not(bootstrap), rustc_doc_primitive = "slice")]
-#[doc(alias = "[")]
-#[doc(alias = "]")]
-#[doc(alias = "[]")]
 /// A dynamically-sized view into a contiguous sequence, `[T]`. Contiguous here
 /// means that elements are laid out so that every element is the same
 /// distance from its neighbors.
@@ -946,9 +924,6 @@ mod prim_str {}
 
 #[cfg_attr(bootstrap, doc(primitive = "tuple"))]
 #[cfg_attr(not(bootstrap), rustc_doc_primitive = "tuple")]
-#[doc(alias = "(")]
-#[doc(alias = ")")]
-#[doc(alias = "()")]
 //
 /// A finite heterogeneous sequence, `(T, U, ..)`.
 ///
@@ -1065,13 +1040,11 @@ mod prim_tuple {}
 
 // Required to make auto trait impls render.
 // See src/librustdoc/passes/collect_trait_impls.rs:collect_trait_impls
-#[doc(hidden)]
 impl<T> (T,) {}
 
 // Fake impl that's only really used for docs.
 #[cfg(doc)]
 #[stable(feature = "rust1", since = "1.0.0")]
-#[doc(fake_variadic)]
 /// This trait is implemented on arbitrary-length tuples.
 impl<T: Clone> Clone for (T,) {
     fn clone(&self) -> Self {
@@ -1082,7 +1055,6 @@ impl<T: Clone> Clone for (T,) {
 // Fake impl that's only really used for docs.
 #[cfg(doc)]
 #[stable(feature = "rust1", since = "1.0.0")]
-#[doc(fake_variadic)]
 /// This trait is implemented on arbitrary-length tuples.
 impl<T: Copy> Copy for (T,) {
     // empty
@@ -1265,8 +1237,6 @@ mod prim_usize {}
 
 #[cfg_attr(bootstrap, doc(primitive = "reference"))]
 #[cfg_attr(not(bootstrap), rustc_doc_primitive = "reference")]
-#[doc(alias = "&")]
-#[doc(alias = "&mut")]
 //
 /// References, `&T` and `&mut T`.
 ///
@@ -1364,7 +1334,6 @@ mod prim_usize {}
 ///
 /// [`std::fmt`]: fmt
 /// [`Hash`]: hash::Hash
-#[doc = concat!("[`ToSocketAddrs`]: ", include_str!("../primitive_docs/net_tosocketaddrs.md"))]
 ///
 /// `&mut T` references get all of the above except `ToSocketAddrs`, plus the following, if `T`
 /// implements that trait:
@@ -1384,10 +1353,6 @@ mod prim_usize {}
 ///
 /// [`FusedIterator`]: iter::FusedIterator
 /// [`TrustedLen`]: iter::TrustedLen
-#[doc = concat!("[`Seek`]: ", include_str!("../primitive_docs/io_seek.md"))]
-#[doc = concat!("[`BufRead`]: ", include_str!("../primitive_docs/io_bufread.md"))]
-#[doc = concat!("[`Read`]: ", include_str!("../primitive_docs/io_read.md"))]
-#[doc = concat!("[`io::Write`]: ", include_str!("../primitive_docs/io_write.md"))]
 ///
 /// Note that due to method call deref coercion, simply calling a trait method will act like they
 /// work on references as well as they do on owned values! The implementations described here are
@@ -1573,13 +1538,11 @@ mod prim_fn {}
 
 // Required to make auto trait impls render.
 // See src/librustdoc/passes/collect_trait_impls.rs:collect_trait_impls
-#[doc(hidden)]
 impl<Ret, T> fn(T) -> Ret {}
 
 // Fake impl that's only really used for docs.
 #[cfg(doc)]
 #[stable(feature = "rust1", since = "1.0.0")]
-#[doc(fake_variadic)]
 /// This trait is implemented on function pointers with any number of arguments.
 impl<Ret, T> Clone for fn(T) -> Ret {
     fn clone(&self) -> Self {
@@ -1590,7 +1553,6 @@ impl<Ret, T> Clone for fn(T) -> Ret {
 // Fake impl that's only really used for docs.
 #[cfg(doc)]
 #[stable(feature = "rust1", since = "1.0.0")]
-#[doc(fake_variadic)]
 /// This trait is implemented on function pointers with any number of arguments.
 impl<Ret, T> Copy for fn(T) -> Ret {
     // empty

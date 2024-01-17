@@ -274,7 +274,6 @@ pub fn decode_error_kind(errno: i32) -> ErrorKind {
     }
 }
 
-#[doc(hidden)]
 pub trait IsMinusOne {
     fn is_minus_one(&self) -> bool;
 }

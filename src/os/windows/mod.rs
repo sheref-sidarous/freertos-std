@@ -23,7 +23,6 @@
 //! ```
 
 #![stable(feature = "rust1", since = "1.0.0")]
-#![doc(cfg(windows))]
 
 pub mod ffi;
 pub mod fs;
@@ -37,22 +36,17 @@ pub mod thread;
 /// Includes all extension traits, and some important type definitions.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub mod prelude {
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::ffi::{OsStrExt, OsStringExt};
-    #[doc(no_inline)]
     #[stable(feature = "file_offset", since = "1.15.0")]
     pub use super::fs::FileExt;
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::fs::{MetadataExt, OpenOptionsExt};
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::io::{
         AsHandle, AsSocket, BorrowedHandle, BorrowedSocket, FromRawHandle, FromRawSocket,
         HandleOrInvalid, IntoRawHandle, IntoRawSocket, OwnedHandle, OwnedSocket,
     };
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::io::{AsRawHandle, AsRawSocket, RawHandle, RawSocket};
 }

@@ -62,7 +62,6 @@ use core::sync::atomic::{AtomicPtr, Ordering};
 use core::{mem, ptr};
 
 #[stable(feature = "alloc_module", since = "1.28.0")]
-#[doc(inline)]
 pub use alloc_crate::alloc::*;
 
 /// The default memory allocator provided by the operating system.
@@ -345,7 +344,6 @@ fn default_alloc_error_hook(layout: Layout) {
 }
 
 #[cfg(not(test))]
-#[doc(hidden)]
 #[alloc_error_handler]
 #[unstable(feature = "alloc_internals", issue = "none")]
 pub fn rust_oom(layout: Layout) -> ! {
@@ -357,7 +355,6 @@ pub fn rust_oom(layout: Layout) -> ! {
 }
 
 #[cfg(not(test))]
-#[doc(hidden)]
 #[allow(unused_attributes)]
 #[unstable(feature = "alloc_internals", issue = "none")]
 pub mod __default_lib_allocator {

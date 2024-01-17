@@ -66,7 +66,6 @@ macro_rules! define_usercalls {
         #[allow(missing_docs, non_camel_case_types)]
         #[non_exhaustive]
         pub enum Usercalls {
-            #[doc(hidden)]
             __enclave_usercalls_invalid = 0,
             $($f,)*
         }

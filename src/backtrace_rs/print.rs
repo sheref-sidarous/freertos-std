@@ -29,7 +29,6 @@ pub enum PrintFmt {
     Short,
     /// Prints a backtrace that contains all possible information
     Full,
-    #[doc(hidden)]
     __Nonexhaustive,
 }
 

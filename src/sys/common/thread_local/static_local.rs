@@ -1,4 +1,3 @@
-#[doc(hidden)]
 #[macro_export]
 #[allow_internal_unstable(
     thread_local_internals,
@@ -75,7 +74,6 @@ macro_rules! __thread_local_inner {
 
 /// On some targets like wasm there's no threads, so no need to generate
 /// thread locals and we can instead just use plain statics!
-#[doc(hidden)]
 pub mod statik {
     use super::super::lazy::LazyKeyInner;
     use crate::fmt;

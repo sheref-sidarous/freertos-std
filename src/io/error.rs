@@ -394,7 +394,6 @@ pub enum ErrorKind {
     /// [`ErrorKind`] variant in the future. It is not recommended to match
     /// an error against `Uncategorized`; use a wildcard match (`_`) instead.
     #[unstable(feature = "io_error_uncategorized", issue = "none")]
-    #[doc(hidden)]
     Uncategorized,
 }
 
@@ -588,8 +587,6 @@ impl Error {
     /// println!("last OS error: {os_error:?}");
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    #[doc(alias = "GetLastError")]
-    #[doc(alias = "errno")]
     #[must_use]
     #[inline]
     pub fn last_os_error() -> Error {

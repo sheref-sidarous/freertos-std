@@ -12,7 +12,6 @@
               to disappear",
     issue = "none"
 )]
-#![doc(hidden)]
 #![deny(unsafe_op_in_unsafe_fn)]
 #![allow(unused_macros)]
 

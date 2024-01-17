@@ -9,7 +9,6 @@ use crate::sync::atomic::{AtomicUsize, Ordering};
 use crate::sync::{Mutex, RwLock};
 use crate::thread::Result;
 
-#[doc(hidden)]
 #[unstable(feature = "edition_panic", issue = "none", reason = "use panic!() instead")]
 #[allow_internal_unstable(libstd_sys_internals, const_format_args, core_panic, rt)]
 #[cfg_attr(not(test), rustc_diagnostic_item = "std_panic_2015_macro")]
@@ -30,7 +29,6 @@ pub macro panic_2015 {
     }),
 }
 
-#[doc(hidden)]
 #[unstable(feature = "edition_panic", issue = "none", reason = "use panic!() instead")]
 pub use core::panic::panic_2021;
 

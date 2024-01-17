@@ -15,18 +15,14 @@ mod static_local;
 #[cfg(not(test))]
 cfg_if::cfg_if! {
     if #[cfg(all(target_family = "wasm", not(target_feature = "atomics")))] {
-        #[doc(hidden)]
         pub use static_local::statik::Key;
     } else if #[cfg(all(target_thread_local, not(all(target_family = "wasm", not(target_feature = "atomics")))))] {
-        #[doc(hidden)]
         pub use fast_local::fast::Key;
     } else if #[cfg(all(not(target_thread_local), not(all(target_family = "wasm", not(target_feature = "atomics")))))] {
-        #[doc(hidden)]
         pub use os_local::os::Key;
     }
 }
 
-#[doc(hidden)]
 #[cfg(test)]
 pub use realstd::thread::__LocalKeyInner as Key;
 

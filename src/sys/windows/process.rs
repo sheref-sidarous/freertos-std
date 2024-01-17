@@ -36,7 +36,6 @@ use libc::{c_void, EXIT_FAILURE, EXIT_SUCCESS};
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Clone, Debug, Eq)]
-#[doc(hidden)]
 pub struct EnvKey {
     os_string: OsString,
     // This stores a UTF-16 encoded string to workaround the mismatch between

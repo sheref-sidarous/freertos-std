@@ -1,4 +1,3 @@
-#[doc(hidden)]
 #[macro_export]
 #[allow_internal_unstable(
     thread_local_internals,
@@ -114,7 +113,6 @@ macro_rules! __thread_local_inner {
     }
 }
 
-#[doc(hidden)]
 pub mod fast {
     use super::super::lazy::LazyKeyInner;
     use crate::cell::Cell;

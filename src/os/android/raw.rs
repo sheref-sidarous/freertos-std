@@ -15,7 +15,6 @@ use crate::os::raw::c_long;
 #[stable(feature = "pthread_t", since = "1.8.0")]
 pub type pthread_t = c_long;
 
-#[doc(inline)]
 #[stable(feature = "raw_ext", since = "1.1.0")]
 pub use self::arch::{blkcnt_t, blksize_t, dev_t, ino_t, mode_t, nlink_t, off_t, stat, time_t};
 

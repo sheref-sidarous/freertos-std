@@ -30,7 +30,6 @@
 
 #![stable(feature = "rust1", since = "1.0.0")]
 #![deny(unsafe_op_in_unsafe_fn)]
-#![doc(cfg(target_os = "wasi"))]
 
 pub mod ffi;
 pub mod fs;
@@ -42,16 +41,12 @@ pub mod net;
 /// Includes all extension traits, and some important type definitions.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub mod prelude {
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::ffi::{OsStrExt, OsStringExt};
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::fs::FileTypeExt;
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::fs::{DirEntryExt, FileExt, MetadataExt, OpenOptionsExt};
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::io::{AsFd, AsRawFd, BorrowedFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
 }

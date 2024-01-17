@@ -151,7 +151,6 @@ pub fn decode_error_kind(errno: i32) -> ErrorKind {
     }
 }
 
-#[doc(hidden)]
 pub trait IsNegative {
     fn is_negative(&self) -> bool;
     fn negate(&self) -> i32;

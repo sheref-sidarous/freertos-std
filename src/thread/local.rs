@@ -197,7 +197,6 @@ impl fmt::Display for AccessError {
 impl Error for AccessError {}
 
 impl<T: 'static> LocalKey<T> {
-    #[doc(hidden)]
     #[unstable(
         feature = "thread_local_internals",
         reason = "recently added to create a key",

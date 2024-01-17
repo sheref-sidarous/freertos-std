@@ -63,7 +63,6 @@ fn last_error() -> io::Error {
     io::Error::from_raw_os_error(unsafe { c::WSAGetLastError() })
 }
 
-#[doc(hidden)]
 pub trait IsMinusOne {
     fn is_minus_one(&self) -> bool;
 }

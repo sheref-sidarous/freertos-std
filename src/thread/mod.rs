@@ -204,7 +204,6 @@ pub use self::local::{AccessError, LocalKey};
 // by the elf linker. "static" is for single-threaded platforms where a global
 // static is sufficient.
 
-#[doc(hidden)]
 #[unstable(feature = "libstd_thread_internals", issue = "none")]
 pub use crate::sys::common::thread_local::Key as __LocalKeyInner;
 
@@ -1680,9 +1679,6 @@ fn _assert_sync_and_send() {
 ///     Ok(())
 /// }
 /// ```
-#[doc(alias = "available_concurrency")] // Alias for a previous name we gave this API on unstable.
-#[doc(alias = "hardware_concurrency")] // Alias for C++ `std::thread::hardware_concurrency`.
-#[doc(alias = "num_cpus")] // Alias for a popular ecosystem crate which provides similar functionality.
 #[stable(feature = "available_parallelism", since = "1.59.0")]
 pub fn available_parallelism() -> io::Result<NonZeroUsize> {
     imp::available_parallelism()

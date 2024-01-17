@@ -7,7 +7,6 @@ use crate::sealed::Sealed;
 use crate::sys::cvt;
 use crate::{fmt, io, mem, ptr};
 
-// FIXME(#43348): Make libc adapt #[doc(cfg(...))] so we don't need these fake definitions here?
 #[cfg(not(unix))]
 #[allow(non_camel_case_types)]
 mod libc {
@@ -248,7 +247,6 @@ impl SocketAddr {
 #[stable(feature = "unix_socket_abstract", since = "CURRENT_RUSTC_VERSION")]
 impl Sealed for SocketAddr {}
 
-#[doc(cfg(any(target_os = "android", target_os = "linux")))]
 #[cfg(any(doc, target_os = "android", target_os = "linux"))]
 #[stable(feature = "unix_socket_abstract", since = "CURRENT_RUSTC_VERSION")]
 impl linux_ext::addr::SocketAddrExt for SocketAddr {

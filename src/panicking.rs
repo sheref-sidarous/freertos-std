@@ -290,7 +290,6 @@ fn default_hook(info: &PanicInfo<'_>) {
 }
 
 #[cfg(not(test))]
-#[doc(hidden)]
 #[unstable(feature = "update_panic_count", issue = "none")]
 pub mod panic_count {
     use crate::cell::Cell;

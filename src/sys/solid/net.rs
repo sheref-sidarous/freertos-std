@@ -123,7 +123,6 @@ impl Drop for FileDesc {
     }
 }
 
-#[doc(hidden)]
 pub trait IsMinusOne {
     fn is_minus_one(&self) -> bool;
 }

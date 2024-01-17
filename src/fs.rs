@@ -685,9 +685,6 @@ impl File {
     /// }
     /// ```
     #[unstable(feature = "file_set_times", issue = "98245")]
-    #[doc(alias = "futimens")]
-    #[doc(alias = "futimes")]
-    #[doc(alias = "SetFileTime")]
     pub fn set_times(&self, times: FileTimes) -> io::Result<()> {
         self.inner.set_times(times.0)
     }
@@ -2128,8 +2125,6 @@ pub fn read_link<P: AsRef<Path>>(path: P) -> io::Result<PathBuf> {
 ///     Ok(())
 /// }
 /// ```
-#[doc(alias = "realpath")]
-#[doc(alias = "GetFinalPathNameByHandle")]
 #[stable(feature = "fs_canonicalize", since = "1.5.0")]
 pub fn canonicalize<P: AsRef<Path>>(path: P) -> io::Result<PathBuf> {
     fs_imp::canonicalize(path.as_ref())
@@ -2170,7 +2165,6 @@ pub fn canonicalize<P: AsRef<Path>>(path: P) -> io::Result<PathBuf> {
 ///     Ok(())
 /// }
 /// ```
-#[doc(alias = "mkdir")]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub fn create_dir<P: AsRef<Path>>(path: P) -> io::Result<()> {
     DirBuilder::new().create(path.as_ref())
@@ -2250,7 +2244,6 @@ pub fn create_dir_all<P: AsRef<Path>>(path: P) -> io::Result<()> {
 ///     Ok(())
 /// }
 /// ```
-#[doc(alias = "rmdir")]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub fn remove_dir<P: AsRef<Path>>(path: P) -> io::Result<()> {
     fs_imp::rmdir(path.as_ref())
