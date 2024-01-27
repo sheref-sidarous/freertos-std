@@ -102,8 +102,6 @@
 //! to use a pointer type to store something that may hold an integer, some of
 //! the time.
 
-extern crate alloc;
-
 use super::{Custom, ErrorData, ErrorKind, RawOsError, SimpleMessage};
 use alloc::boxed::Box;
 use core::marker::PhantomData;
@@ -375,9 +373,6 @@ static_assert!((TAG_MASK + 1).is_power_of_two());
 // And they must have sufficient alignment.
 static_assert!(align_of::<SimpleMessage>() >= TAG_MASK + 1);
 static_assert!(align_of::<Custom>() >= TAG_MASK + 1);
-
-// `RawOsError` must be an alias for `i32`.
-const _: fn(RawOsError) -> i32 = |os| os;
 
 static_assert!(@usize_eq: TAG_MASK & TAG_SIMPLE_MESSAGE, TAG_SIMPLE_MESSAGE);
 static_assert!(@usize_eq: TAG_MASK & TAG_CUSTOM, TAG_CUSTOM);

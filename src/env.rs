@@ -174,7 +174,8 @@ impl Iterator for Vars {
 #[stable(feature = "std_debug", since = "1.16.0")]
 impl fmt::Debug for Vars {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Vars").finish_non_exhaustive()
+        let Self { inner: VarsOs { inner } } = self;
+        f.debug_struct("Vars").field("inner", &inner.str_debug()).finish()
     }
 }
 
@@ -192,7 +193,8 @@ impl Iterator for VarsOs {
 #[stable(feature = "std_debug", since = "1.16.0")]
 impl fmt::Debug for VarsOs {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("VarOs").finish_non_exhaustive()
+        let Self { inner } = self;
+        f.debug_struct("VarsOs").field("inner", inner).finish()
     }
 }
 
@@ -825,7 +827,8 @@ impl DoubleEndedIterator for Args {
 #[stable(feature = "std_debug", since = "1.16.0")]
 impl fmt::Debug for Args {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Args").field("inner", &self.inner.inner).finish()
+        let Self { inner: ArgsOs { inner } } = self;
+        f.debug_struct("Args").field("inner", inner).finish()
     }
 }
 
@@ -866,7 +869,8 @@ impl DoubleEndedIterator for ArgsOs {
 #[stable(feature = "std_debug", since = "1.16.0")]
 impl fmt::Debug for ArgsOs {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ArgsOs").field("inner", &self.inner).finish()
+        let Self { inner } = self;
+        f.debug_struct("ArgsOs").field("inner", inner).finish()
     }
 }
 
@@ -886,6 +890,7 @@ pub mod consts {
     /// - aarch64
     /// - loongarch64
     /// - m68k
+    /// - csky
     /// - mips
     /// - mips64
     /// - powerpc

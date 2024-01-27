@@ -12,7 +12,7 @@ use crate::sys::c;
 use crate::sys::fs::{File, OpenOptions};
 use crate::sys::handle::Handle;
 use crate::sys::hashmap_random_keys;
-use crate::sys_common::IntoInner;
+use crate::sys_common::{FromInner, IntoInner};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Anonymous pipes
@@ -25,6 +25,12 @@ pub struct AnonPipe {
 impl IntoInner<Handle> for AnonPipe {
     fn into_inner(self) -> Handle {
         self.inner
+    }
+}
+
+impl FromInner<Handle> for AnonPipe {
+    fn from_inner(inner: Handle) -> AnonPipe {
+        Self { inner }
     }
 }
 
@@ -373,7 +379,7 @@ impl AnonPipe {
 
         // Asynchronous read of the pipe.
         // If successful, `callback` will be called once it completes.
-        let result = io(self.inner.as_handle(), buf, len, &mut overlapped, callback);
+        let result = io(self.inner.as_handle(), buf, len, &mut overlapped, Some(callback));
         if result == c::FALSE {
             // We can return here because the call failed.
             // After this we must not return until the I/O completes.

@@ -31,6 +31,17 @@ pub mod os {
     pub const EXE_EXTENSION: &str = "";
 }
 
+#[cfg(target_os = "tvos")]
+pub mod os {
+    pub const FAMILY: &str = "unix";
+    pub const OS: &str = "tvos";
+    pub const DLL_PREFIX: &str = "lib";
+    pub const DLL_SUFFIX: &str = ".dylib";
+    pub const DLL_EXTENSION: &str = "dylib";
+    pub const EXE_SUFFIX: &str = "";
+    pub const EXE_EXTENSION: &str = "";
+}
+
 #[cfg(target_os = "watchos")]
 pub mod os {
     pub const FAMILY: &str = "unix";
@@ -141,6 +152,28 @@ pub mod os {
     pub const EXE_EXTENSION: &str = "elf";
 }
 
+#[cfg(target_os = "hurd")]
+pub mod os {
+    pub const FAMILY: &str = "unix";
+    pub const OS: &str = "hurd";
+    pub const DLL_PREFIX: &str = "lib";
+    pub const DLL_SUFFIX: &str = ".so";
+    pub const DLL_EXTENSION: &str = "so";
+    pub const EXE_SUFFIX: &str = "";
+    pub const EXE_EXTENSION: &str = "";
+}
+
+#[cfg(target_os = "vita")]
+pub mod os {
+    pub const FAMILY: &str = "unix";
+    pub const OS: &str = "vita";
+    pub const DLL_PREFIX: &str = "lib";
+    pub const DLL_SUFFIX: &str = ".so";
+    pub const DLL_EXTENSION: &str = "so";
+    pub const EXE_SUFFIX: &str = ".elf";
+    pub const EXE_EXTENSION: &str = "elf";
+}
+
 #[cfg(all(target_os = "emscripten", target_arch = "asmjs"))]
 pub mod os {
     pub const FAMILY: &str = "unix";
@@ -225,6 +258,17 @@ pub mod os {
     pub const DLL_PREFIX: &str = "lib";
     pub const DLL_SUFFIX: &str = ".so";
     pub const DLL_EXTENSION: &str = "so";
+    pub const EXE_SUFFIX: &str = "";
+    pub const EXE_EXTENSION: &str = "";
+}
+
+#[cfg(target_os = "aix")]
+pub mod os {
+    pub const FAMILY: &str = "unix";
+    pub const OS: &str = "aix";
+    pub const DLL_PREFIX: &str = "lib";
+    pub const DLL_SUFFIX: &str = ".a";
+    pub const DLL_EXTENSION: &str = "a";
     pub const EXE_SUFFIX: &str = "";
     pub const EXE_EXTENSION: &str = "";
 }

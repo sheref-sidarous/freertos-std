@@ -3,7 +3,7 @@ use crate::mem::size_of;
 use crate::os::windows::io::{AsHandle, AsRawHandle, BorrowedHandle};
 use crate::slice;
 use crate::sys::c;
-use libc;
+use core::ffi::c_void;
 
 #[derive(Copy, Clone)]
 #[repr(transparent)]
@@ -17,10 +17,7 @@ impl<'a> IoSlice<'a> {
     pub fn new(buf: &'a [u8]) -> IoSlice<'a> {
         assert!(buf.len() <= c::ULONG::MAX as usize);
         IoSlice {
-            vec: c::WSABUF {
-                len: buf.len() as c::ULONG,
-                buf: buf.as_ptr() as *mut u8 as *mut c::CHAR,
-            },
+            vec: c::WSABUF { len: buf.len() as c::ULONG, buf: buf.as_ptr() as *mut u8 },
             _p: PhantomData,
         }
     }
@@ -54,7 +51,7 @@ impl<'a> IoSliceMut<'a> {
     pub fn new(buf: &'a mut [u8]) -> IoSliceMut<'a> {
         assert!(buf.len() <= c::ULONG::MAX as usize);
         IoSliceMut {
-            vec: c::WSABUF { len: buf.len() as c::ULONG, buf: buf.as_mut_ptr() as *mut c::CHAR },
+            vec: c::WSABUF { len: buf.len() as c::ULONG, buf: buf.as_mut_ptr() },
             _p: PhantomData,
         }
     }
@@ -139,7 +136,7 @@ unsafe fn msys_tty_on(handle: c::HANDLE) -> bool {
     let res = c::GetFileInformationByHandleEx(
         handle,
         c::FileNameInfo,
-        &mut name_info as *mut _ as *mut libc::c_void,
+        &mut name_info as *mut _ as *mut c_void,
         size_of::<FILE_NAME_INFO>() as u32,
     );
     if res == 0 {

@@ -10,12 +10,19 @@ use crate::ptr::{eq, read_unaligned};
 use crate::slice::from_raw_parts;
 use crate::sys::net::Socket;
 
-#[cfg(all(doc, not(target_os = "linux"), not(target_os = "android"), not(target_os = "netbsd")))]
+#[cfg(all(
+    doc,
+    not(target_os = "linux"),
+    not(target_os = "android"),
+    not(target_os = "netbsd"),
+    not(target_os = "freebsd")
+))]
 #[allow(non_camel_case_types)]
 mod libc {
     pub use libc::c_int;
     pub struct ucred;
     pub struct cmsghdr;
+    pub struct sockcred2;
     pub type pid_t = i32;
     pub type gid_t = u32;
     pub type uid_t = u32;

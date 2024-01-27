@@ -46,7 +46,8 @@ extern "C" {
             target_os = "linux",
             target_os = "emscripten",
             target_os = "fuchsia",
-            target_os = "l4re"
+            target_os = "l4re",
+            target_os = "hurd",
         ),
         link_name = "__errno_location"
     )]
@@ -63,10 +64,17 @@ extern "C" {
     #[cfg_attr(any(target_os = "solaris", target_os = "illumos"), link_name = "___errno")]
     #[cfg_attr(target_os = "nto", link_name = "__get_errno_ptr")]
     #[cfg_attr(
-        any(target_os = "macos", target_os = "ios", target_os = "freebsd", target_os = "watchos"),
+        any(
+            target_os = "macos",
+            target_os = "ios",
+            target_os = "tvos",
+            target_os = "freebsd",
+            target_os = "watchos"
+        ),
         link_name = "__error"
     )]
     #[cfg_attr(target_os = "haiku", link_name = "_errnop")]
+    #[cfg_attr(target_os = "aix", link_name = "_Errno")]
     fn errno_location() -> *mut c_int;
 }
 
@@ -115,7 +123,10 @@ pub fn set_errno(e: i32) {
 pub fn error_string(errno: i32) -> String {
     extern "C" {
         #[cfg_attr(
-            all(any(target_os = "linux", target_env = "newlib"), not(target_env = "ohos")),
+            all(
+                any(target_os = "linux", target_os = "hurd", target_env = "newlib"),
+                not(target_env = "ohos")
+            ),
             link_name = "__xpg_strerror_r"
         )]
         fn strerror_r(errnum: c_int, buf: *mut c_char, buflen: libc::size_t) -> c_int;
@@ -244,6 +255,41 @@ impl StdError for JoinPathsError {
     }
 }
 
+#[cfg(target_os = "aix")]
+pub fn current_exe() -> io::Result<PathBuf> {
+    use crate::io::ErrorKind;
+
+    #[cfg(test)]
+    use realstd::env;
+
+    #[cfg(not(test))]
+    use crate::env;
+
+    let exe_path = env::args().next().ok_or(io::const_io_error!(
+        ErrorKind::NotFound,
+        "an executable path was not found because no arguments were provided through argv"
+    ))?;
+    let path = PathBuf::from(exe_path);
+    if path.is_absolute() {
+        return path.canonicalize();
+    }
+    // Search PWD to infer current_exe.
+    if let Some(pstr) = path.to_str() && pstr.contains("/") {
+        return getcwd().map(|cwd| cwd.join(path))?.canonicalize();
+    }
+    // Search PATH to infer current_exe.
+    if let Some(p) = getenv(OsStr::from_bytes("PATH".as_bytes())) {
+        for search_path in split_paths(&p) {
+            let pb = search_path.join(&path);
+            if pb.is_file() && let Ok(metadata) = crate::fs::metadata(&pb) &&
+               metadata.permissions().mode() & 0o111 != 0 {
+                return pb.canonicalize();
+            }
+        }
+    }
+    Err(io::const_io_error!(ErrorKind::NotFound, "an executable path was not found"))
+}
+
 #[cfg(any(target_os = "freebsd", target_os = "dragonfly"))]
 pub fn current_exe() -> io::Result<PathBuf> {
     unsafe {
@@ -353,7 +399,12 @@ pub fn current_exe() -> io::Result<PathBuf> {
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "android", target_os = "emscripten"))]
+#[cfg(any(
+    target_os = "linux",
+    target_os = "hurd",
+    target_os = "android",
+    target_os = "emscripten"
+))]
 pub fn current_exe() -> io::Result<PathBuf> {
     match crate::fs::read_link("/proc/self/exe") {
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => Err(io::const_io_error!(
@@ -375,7 +426,7 @@ pub fn current_exe() -> io::Result<PathBuf> {
     Ok(PathBuf::from(OsString::from_vec(e)))
 }
 
-#[cfg(any(target_os = "macos", target_os = "ios", target_os = "watchos"))]
+#[cfg(any(target_os = "macos", target_os = "ios", target_os = "tvos", target_os = "watchos"))]
 pub fn current_exe() -> io::Result<PathBuf> {
     unsafe {
         let mut sz: u32 = 0;
@@ -460,7 +511,7 @@ pub fn current_exe() -> io::Result<PathBuf> {
     path.canonicalize()
 }
 
-#[cfg(any(target_os = "espidf", target_os = "horizon"))]
+#[cfg(any(target_os = "espidf", target_os = "horizon", target_os = "vita"))]
 pub fn current_exe() -> io::Result<PathBuf> {
     super::unsupported::unsupported()
 }
@@ -487,6 +538,34 @@ pub fn current_exe() -> io::Result<PathBuf> {
 
 pub struct Env {
     iter: vec::IntoIter<(OsString, OsString)>,
+}
+
+// FIXME(https://github.com/rust-lang/rust/issues/114583): Remove this when <OsStr as Debug>::fmt matches <str as Debug>::fmt.
+pub struct EnvStrDebug<'a> {
+    slice: &'a [(OsString, OsString)],
+}
+
+impl fmt::Debug for EnvStrDebug<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self { slice } = self;
+        f.debug_list()
+            .entries(slice.iter().map(|(a, b)| (a.to_str().unwrap(), b.to_str().unwrap())))
+            .finish()
+    }
+}
+
+impl Env {
+    pub fn str_debug(&self) -> impl fmt::Debug + '_ {
+        let Self { iter } = self;
+        EnvStrDebug { slice: iter.as_slice() }
+    }
+}
+
+impl fmt::Debug for Env {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self { iter } = self;
+        f.debug_list().entries(iter.as_slice()).finish()
+    }
 }
 
 impl !Send for Env {}
@@ -560,16 +639,21 @@ pub fn env() -> Env {
 pub fn getenv(k: &OsStr) -> Option<OsString> {
     // environment variables with a nul byte can't be set, so their value is
     // always None as well
-    let s = run_with_cstr(k.as_bytes(), |k| {
+    run_with_cstr(k.as_bytes(), |k| {
         let _guard = env_read_lock();
-        Ok(unsafe { libc::getenv(k.as_ptr()) } as *const libc::c_char)
+        let v = unsafe { libc::getenv(k.as_ptr()) } as *const libc::c_char;
+
+        if v.is_null() {
+            Ok(None)
+        } else {
+            // SAFETY: `v` cannot be mutated while executing this line since we've a read lock
+            let bytes = unsafe { CStr::from_ptr(v) }.to_bytes().to_vec();
+
+            Ok(Some(OsStringExt::from_vec(bytes)))
+        }
     })
-    .ok()?;
-    if s.is_null() {
-        None
-    } else {
-        Some(OsStringExt::from_vec(unsafe { CStr::from_ptr(s) }.to_bytes().to_vec()))
-    }
+    .ok()
+    .flatten()
 }
 
 pub fn setenv(k: &OsStr, v: &OsStr) -> io::Result<()> {
@@ -609,12 +693,14 @@ pub fn home_dir() -> Option<PathBuf> {
     #[cfg(any(
         target_os = "android",
         target_os = "ios",
+        target_os = "tvos",
         target_os = "watchos",
         target_os = "emscripten",
         target_os = "redox",
         target_os = "vxworks",
         target_os = "espidf",
-        target_os = "horizon"
+        target_os = "horizon",
+        target_os = "vita",
     ))]
     unsafe fn fallback() -> Option<OsString> {
         None
@@ -622,12 +708,14 @@ pub fn home_dir() -> Option<PathBuf> {
     #[cfg(not(any(
         target_os = "android",
         target_os = "ios",
+        target_os = "tvos",
         target_os = "watchos",
         target_os = "emscripten",
         target_os = "redox",
         target_os = "vxworks",
         target_os = "espidf",
-        target_os = "horizon"
+        target_os = "horizon",
+        target_os = "vita",
     )))]
     unsafe fn fallback() -> Option<OsString> {
         let amt = match libc::sysconf(libc::_SC_GETPW_R_SIZE_MAX) {

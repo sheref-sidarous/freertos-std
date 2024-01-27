@@ -34,6 +34,7 @@ impl Handle {
 }
 
 impl AsInner<OwnedHandle> for Handle {
+    #[inline]
     fn as_inner(&self) -> &OwnedHandle {
         &self.0
     }
@@ -142,13 +143,8 @@ impl Handle {
     ) -> io::Result<Option<usize>> {
         let len = cmp::min(buf.len(), <c::DWORD>::MAX as usize) as c::DWORD;
         let mut amt = 0;
-        let res = cvt(c::ReadFile(
-            self.as_handle(),
-            buf.as_ptr() as c::LPVOID,
-            len,
-            &mut amt,
-            overlapped,
-        ));
+        let res =
+            cvt(c::ReadFile(self.as_raw_handle(), buf.as_mut_ptr(), len, &mut amt, overlapped));
         match res {
             Ok(_) => Ok(Some(amt as usize)),
             Err(e) => {
@@ -234,7 +230,7 @@ impl Handle {
         len: usize,
         offset: Option<u64>,
     ) -> io::Result<usize> {
-        let mut io_status = c::IO_STATUS_BLOCK::default();
+        let mut io_status = c::IO_STATUS_BLOCK::PENDING;
 
         // The length is clamped at u32::MAX.
         let len = cmp::min(len, c::DWORD::MAX as usize) as c::DWORD;
@@ -282,7 +278,7 @@ impl Handle {
     ///
     /// If `offset` is `None` then the current file position is used.
     fn synchronous_write(&self, buf: &[u8], offset: Option<u64>) -> io::Result<usize> {
-        let mut io_status = c::IO_STATUS_BLOCK::default();
+        let mut io_status = c::IO_STATUS_BLOCK::PENDING;
 
         // The length is clamped at u32::MAX.
         let len = cmp::min(buf.len(), c::DWORD::MAX as usize) as c::DWORD;

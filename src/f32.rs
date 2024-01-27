@@ -500,10 +500,7 @@ impl f32 {
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn log2(self) -> f32 {
-        #[cfg(target_os = "android")]
-        return crate::sys::android::log2f32(self);
-        #[cfg(not(target_os = "android"))]
-        return unsafe { intrinsics::log2f32(self) };
+        crate::sys::log2f32(self)
     }
 
     /// Returns the base 10 logarithm of the number.
@@ -528,7 +525,7 @@ impl f32 {
 
     /// The positive difference of two numbers.
     ///
-    /// * If `self <= other`: `0:0`
+    /// * If `self <= other`: `0.0`
     /// * Else: `self - other`
     ///
     /// # Examples
@@ -959,5 +956,49 @@ impl f32 {
     #[inline]
     pub fn atanh(self) -> f32 {
         0.5 * ((2.0 * self) / (1.0 - self)).ln_1p()
+    }
+
+    /// Gamma function.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(float_gamma)]
+    /// let x = 5.0f32;
+    ///
+    /// let abs_difference = (x.gamma() - 24.0).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[rustc_allow_incoherent_impl]
+    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[unstable(feature = "float_gamma", issue = "99842")]
+    #[inline]
+    pub fn gamma(self) -> f32 {
+        unsafe { cmath::tgammaf(self) }
+    }
+
+    /// Natural logarithm of the absolute value of the gamma function
+    ///
+    /// The integer part of the tuple indicates the sign of the gamma function.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(float_gamma)]
+    /// let x = 2.0f32;
+    ///
+    /// let abs_difference = (x.ln_gamma().0 - 0.0).abs();
+    ///
+    /// assert!(abs_difference <= f32::EPSILON);
+    /// ```
+    #[rustc_allow_incoherent_impl]
+    #[must_use = "method returns a new number and does not mutate the original value"]
+    #[unstable(feature = "float_gamma", issue = "99842")]
+    #[inline]
+    pub fn ln_gamma(self) -> (f32, i32) {
+        let mut signgamp: i32 = 0;
+        let x = unsafe { cmath::lgammaf_r(self, &mut signgamp) };
+        (x, signgamp)
     }
 }

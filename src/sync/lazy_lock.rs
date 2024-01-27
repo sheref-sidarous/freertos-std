@@ -1,9 +1,9 @@
 use crate::cell::UnsafeCell;
-use crate::fmt;
 use crate::mem::ManuallyDrop;
 use crate::ops::Deref;
 use crate::panic::{RefUnwindSafe, UnwindSafe};
 use crate::sync::Once;
+use crate::{fmt, ptr};
 
 use super::once::ExclusiveState;
 
@@ -24,6 +24,8 @@ union Data<T, F> {
 /// [`LazyCell`]: crate::cell::LazyCell
 ///
 /// # Examples
+///
+/// Initialize static variables with `LazyLock`.
 ///
 /// ```
 /// #![feature(lazy_cell)]
@@ -54,6 +56,24 @@ union Data<T, F> {
 ///     //   Some("Hoyten")
 /// }
 /// ```
+/// Initialize fields with `LazyLock`.
+/// ```
+/// #![feature(lazy_cell)]
+///
+/// use std::sync::LazyLock;
+///
+/// #[derive(Debug)]
+/// struct UseCellLock {
+///     number: LazyLock<u32>,
+/// }
+/// fn main() {
+///     let lock: LazyLock<u32> = LazyLock::new(|| 0u32);
+///
+///     let data = UseCellLock { number: lock };
+///     println!("{}", *data.number);
+/// }
+/// ```
+
 #[unstable(feature = "lazy_cell", issue = "109736")]
 pub struct LazyLock<T, F = fn() -> T> {
     once: Once,
@@ -67,6 +87,51 @@ impl<T, F: FnOnce() -> T> LazyLock<T, F> {
     #[unstable(feature = "lazy_cell", issue = "109736")]
     pub const fn new(f: F) -> LazyLock<T, F> {
         LazyLock { once: Once::new(), data: UnsafeCell::new(Data { f: ManuallyDrop::new(f) }) }
+    }
+
+    /// Creates a new lazy value that is already initialized.
+    #[inline]
+    #[cfg(test)]
+    pub(crate) fn preinit(value: T) -> LazyLock<T, F> {
+        let once = Once::new();
+        once.call_once(|| {});
+        LazyLock { once, data: UnsafeCell::new(Data { value: ManuallyDrop::new(value) }) }
+    }
+
+    /// Consumes this `LazyLock` returning the stored value.
+    ///
+    /// Returns `Ok(value)` if `Lazy` is initialized and `Err(f)` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(lazy_cell)]
+    /// #![feature(lazy_cell_consume)]
+    ///
+    /// use std::sync::LazyLock;
+    ///
+    /// let hello = "Hello, World!".to_string();
+    ///
+    /// let lazy = LazyLock::new(|| hello.to_uppercase());
+    ///
+    /// assert_eq!(&*lazy, "HELLO, WORLD!");
+    /// assert_eq!(LazyLock::into_inner(lazy).ok(), Some("HELLO, WORLD!".to_string()));
+    /// ```
+    #[unstable(feature = "lazy_cell_consume", issue = "109736")]
+    pub fn into_inner(mut this: Self) -> Result<T, F> {
+        let state = this.once.state();
+        match state {
+            ExclusiveState::Poisoned => panic!("LazyLock instance has previously been poisoned"),
+            state => {
+                let this = ManuallyDrop::new(this);
+                let data = unsafe { ptr::read(&this.data) }.into_inner();
+                match state {
+                    ExclusiveState::Incomplete => Err(ManuallyDrop::into_inner(unsafe { data.f })),
+                    ExclusiveState::Complete => Ok(ManuallyDrop::into_inner(unsafe { data.value })),
+                    ExclusiveState::Poisoned => unreachable!(),
+                }
+            }
+        }
     }
 
     /// Forces the evaluation of this lazy value and
@@ -157,10 +222,12 @@ impl<T: Default> Default for LazyLock<T> {
 #[unstable(feature = "lazy_cell", issue = "109736")]
 impl<T: fmt::Debug, F> fmt::Debug for LazyLock<T, F> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut d = f.debug_tuple("LazyLock");
         match self.get() {
-            Some(v) => f.debug_tuple("LazyLock").field(v).finish(),
-            None => f.write_str("LazyLock(Uninit)"),
-        }
+            Some(v) => d.field(v),
+            None => d.field(&format_args!("<uninit>")),
+        };
+        d.finish()
     }
 }
 

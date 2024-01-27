@@ -40,7 +40,18 @@ impl Frame {
             Frame::Raw(ctx) => ctx,
             Frame::Cloned { ip, .. } => return ip,
         };
-        unsafe { uw::_Unwind_GetIP(ctx) as *mut c_void }
+        #[allow(unused_mut)]
+        let mut ip = unsafe { uw::_Unwind_GetIP(ctx) as *mut c_void };
+
+        // To reduce TCB size in SGX enclaves, we do not want to implement
+        // symbol resolution functionality. Rather, we can print the offset of
+        // the address here, which could be later mapped to correct function.
+        #[cfg(all(target_env = "sgx", target_vendor = "fortanix"))]
+        {
+            let image_base = super::get_image_base();
+            ip = usize::wrapping_sub(ip as usize, image_base as _) as _;
+        }
+        ip
     }
 
     pub fn sp(&self) -> *mut c_void {
@@ -66,7 +77,7 @@ impl Frame {
         //
         // Note the `skip_inner_frames.rs` test is skipped on macOS due to this
         // clause, and if this is fixed that test in theory can be run on macOS!
-        if cfg!(target_os = "macos") || cfg!(target_os = "ios") {
+        if cfg!(target_vendor = "apple") {
             self.ip()
         } else {
             unsafe { uw::_Unwind_FindEnclosingFunction(self.ip()) }
@@ -158,7 +169,8 @@ mod uw {
             not(all(target_os = "android", target_arch = "arm")),
             not(all(target_os = "freebsd", target_arch = "arm")),
             not(all(target_os = "linux", target_arch = "arm")),
-            not(all(target_os = "horizon", target_arch = "arm"))
+            not(all(target_os = "horizon", target_arch = "arm")),
+            not(all(target_os = "vita", target_arch = "arm")),
         ))] {
             extern "C" {
                 pub fn _Unwind_GetIP(ctx: *mut _Unwind_Context) -> libc::uintptr_t;

@@ -8,11 +8,6 @@ mod tests;
 macro_rules! alias_core_ffi {
     ($($t:ident)*) => {$(
         #[stable(feature = "raw_os", since = "1.1.0")]
-        // Make this type alias appear cfg-dependent so that Clippy does not suggest
-        // replacing expressions like `0 as c_char` with `0_i8`/`0_u8`. This #[cfg(all())] can be
-        // removed after the false positive in https://github.com/rust-lang/rust-clippy/issues/8093
-        // is fixed.
-        #[cfg(all())]
         pub type $t = core::ffi::$t;
     )*}
 }

@@ -40,6 +40,9 @@ macro_rules! panic {
 /// Use `print!` only for the primary output of your program. Use
 /// [`eprint!`] instead to print error and progress messages.
 ///
+/// See [the formatting documentation in `std::fmt`](../std/fmt/index.html)
+/// for details of the macro argument syntax.
+///
 /// [flush]: crate::io::Write::flush
 /// [`println!`]: crate::println
 /// [`eprint!`]: crate::eprint
@@ -102,6 +105,9 @@ macro_rules! print {
 /// Use `println!` only for the primary output of your program. Use
 /// [`eprintln!`] instead to print error and progress messages.
 ///
+/// See [the formatting documentation in `std::fmt`](../std/fmt/index.html)
+/// for details of the macro argument syntax.
+///
 /// [`std::fmt`]: crate::fmt
 /// [`eprintln!`]: crate::eprintln
 /// [lock]: crate::io::Stdout
@@ -149,11 +155,14 @@ macro_rules! println {
 /// [`io::stderr`]: crate::io::stderr
 /// [`io::stdout`]: crate::io::stdout
 ///
+/// See [the formatting documentation in `std::fmt`](../std/fmt/index.html)
+/// for details of the macro argument syntax.
+///
 /// # Panics
 ///
 /// Panics if writing to `io::stderr` fails.
 ///
-/// Writing to non-blocking stdout can cause an error, which will lead
+/// Writing to non-blocking stderr can cause an error, which will lead
 /// this macro to panic.
 ///
 /// # Examples
@@ -180,6 +189,9 @@ macro_rules! eprint {
 /// Use `eprintln!` only for error and progress messages. Use `println!`
 /// instead for the primary output of your program.
 ///
+/// See [the formatting documentation in `std::fmt`](../std/fmt/index.html)
+/// for details of the macro argument syntax.
+///
 /// [`io::stderr`]: crate::io::stderr
 /// [`io::stdout`]: crate::io::stdout
 /// [`println!`]: crate::println
@@ -188,7 +200,7 @@ macro_rules! eprint {
 ///
 /// Panics if writing to `io::stderr` fails.
 ///
-/// Writing to non-blocking stdout can cause an error, which will lead
+/// Writing to non-blocking stderr can cause an error, which will lead
 /// this macro to panic.
 ///
 /// # Examples
