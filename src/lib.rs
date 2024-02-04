@@ -328,7 +328,6 @@
 #![feature(portable_simd)]
 #![feature(prelude_2024)]
 #![feature(ptr_as_uninit)]
-#![feature(raw_os_nonzero)]
 #![feature(round_ties_even)]
 #![feature(slice_internals)]
 #![feature(slice_ptr_get)]
