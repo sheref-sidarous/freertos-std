@@ -370,7 +370,6 @@
 #![feature(get_many_mut)]
 #![feature(lazy_cell)]
 #![feature(log_syntax)]
-#![feature(stdsimd)]
 #![feature(test)]
 #![feature(trace_macros)]
 // tidy-alphabetical-end
