@@ -53,6 +53,9 @@ cfg_if::cfg_if! {
     } else if #[cfg(all(target_vendor = "fortanix", target_env = "sgx"))] {
         mod sgx;
         pub use self::sgx::*;
+    } else if #[cfg(target_os = "teeos")] {
+        mod teeos;
+        pub use self::teeos::*;
     } else if #[cfg(target_os = "freertos")] {
         mod freertos;
         pub use self::freertos::*;

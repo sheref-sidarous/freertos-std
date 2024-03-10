@@ -16,7 +16,7 @@ use crate::fmt;
 use crate::result;
 use crate::sys;
 
-use alloc_crate as alloc;
+extern crate alloc;
 
 /// A specialized [`Result`] type for I/O operations.
 ///

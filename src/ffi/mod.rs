@@ -152,8 +152,9 @@
 //! [windows.OsStringExt]: crate::os::windows::ffi::OsStringExt "os::windows::ffi::OsStringExt"
 //! [`from_wide`]: crate::os::windows::ffi::OsStringExt::from_wide "os::windows::ffi::OsStringExt::from_wide"
 
-extern crate alloc;
+#![stable(feature = "rust1", since = "1.0.0")]
 
+extern crate alloc;
 
 #[stable(feature = "alloc_c_string", since = "1.64.0")]
 pub use alloc::ffi::{CString, FromVecWithNulError, IntoStringError, NulError};
