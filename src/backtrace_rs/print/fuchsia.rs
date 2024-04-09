@@ -25,7 +25,7 @@ const PT_NOTE: u32 = 4;
 
 // Now we have to replicate, bit for bit, the structure of the dl_phdr_info
 // type used by fuchsia's current dynamic linker. Chromium also has this ABI
-// boundary as well as crashpad. Eventully we'd like to move these cases to
+// boundary as well as crashpad. Eventually we'd like to move these cases to
 // use elf-search but we'd need to provide that in the SDK and that has not
 // yet been done. Thus we (and they) are stuck having to use this method
 // which incurs a tight coupling with the fuchsia libc.
@@ -425,7 +425,7 @@ impl DsoPrinter<'_, '_> {
 
 /// This function prints the Fuchsia symbolizer markup for all information contained in a DSO.
 pub fn print_dso_context(out: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    out.write_str("{{{reset}}}\n")?;
+    out.write_str("{{{reset:begin}}}\n")?;
     let mut visitor = DsoPrinter {
         writer: out,
         module_count: 0,
@@ -433,4 +433,9 @@ pub fn print_dso_context(out: &mut core::fmt::Formatter<'_>) -> core::fmt::Resul
     };
     for_each_dso(&mut visitor);
     visitor.error
+}
+
+/// This function prints the Fuchsia symbolizer markup to end the backtrace.
+pub fn finish_context(out: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    out.write_str("{{{reset:end}}}\n")
 }

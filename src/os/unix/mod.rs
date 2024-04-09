@@ -29,8 +29,6 @@
 //! [`OsString`]: crate::ffi::OsString
 
 #![stable(feature = "rust1", since = "1.0.0")]
-#![doc(cfg(unix))]
-#![allow(unexpected_cfgs)]
 
 // Use linux as the default platform when documenting on other platforms like Windows
 #[cfg(doc)]
@@ -38,6 +36,8 @@ use crate::os::linux as platform;
 
 #[cfg(not(doc))]
 mod platform {
+    #[cfg(target_os = "aix")]
+    pub use crate::os::aix::*;
     #[cfg(target_os = "android")]
     pub use crate::os::android::*;
     #[cfg(target_os = "dragonfly")]
@@ -54,6 +54,8 @@ mod platform {
     pub use crate::os::haiku::*;
     #[cfg(target_os = "horizon")]
     pub use crate::os::horizon::*;
+    #[cfg(target_os = "hurd")]
+    pub use crate::os::hurd::*;
     #[cfg(target_os = "illumos")]
     pub use crate::os::illumos::*;
     #[cfg(target_os = "ios")]
@@ -74,6 +76,10 @@ mod platform {
     pub use crate::os::redox::*;
     #[cfg(target_os = "solaris")]
     pub use crate::os::solaris::*;
+    #[cfg(target_os = "tvos")]
+    pub use crate::os::tvos::*;
+    #[cfg(target_os = "vita")]
+    pub use crate::os::vita::*;
     #[cfg(target_os = "vxworks")]
     pub use crate::os::vxworks::*;
     #[cfg(target_os = "watchos")]
@@ -95,6 +101,7 @@ pub mod thread;
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "ios",
+    target_os = "tvos",
     target_os = "watchos",
     target_os = "macos",
     target_os = "netbsd",
@@ -108,25 +115,18 @@ pub mod ucred;
 /// Includes all extension traits, and some important type definitions.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub mod prelude {
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::ffi::{OsStrExt, OsStringExt};
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::fs::DirEntryExt;
-    #[doc(no_inline)]
     #[stable(feature = "file_offset", since = "1.15.0")]
     pub use super::fs::FileExt;
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::fs::{FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt};
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::io::{AsFd, AsRawFd, BorrowedFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::process::{CommandExt, ExitStatusExt};
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::thread::JoinHandleExt;
 }

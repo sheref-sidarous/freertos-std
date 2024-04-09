@@ -4,9 +4,6 @@
 
 use super::{Custom, ErrorData, ErrorKind, RawOsError, SimpleMessage};
 
-extern crate alloc;
-use alloc::boxed::Box;
-
 type Inner = ErrorData<Box<Custom>>;
 
 pub(super) struct Repr(Inner);

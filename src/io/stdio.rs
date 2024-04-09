@@ -611,6 +611,7 @@ static STDOUT: OnceLock<ReentrantMutex<RefCell<LineWriter<StdoutRaw>>>> = OnceLo
 /// ```
 #[must_use]
 #[stable(feature = "rust1", since = "1.0.0")]
+#[cfg_attr(not(test), rustc_diagnostic_item = "io_stdout")]
 pub fn stdout() -> Stdout {
     Stdout {
         inner: STDOUT
@@ -847,6 +848,7 @@ pub struct StderrLock<'a> {
 /// ```
 #[must_use]
 #[stable(feature = "rust1", since = "1.0.0")]
+#[cfg_attr(not(test), rustc_diagnostic_item = "io_stderr")]
 pub fn stderr() -> Stderr {
     // Note that unlike `stdout()` we don't use `at_exit` here to register a
     // destructor. Stderr is not buffered, so there's no need to run a
@@ -983,7 +985,6 @@ impl fmt::Debug for StderrLock<'_> {
         and may disappear in the future",
     issue = "none"
 )]
-#[doc(hidden)]
 pub fn set_output_capture(sink: Option<LocalStream>) -> Option<LocalStream> {
     if sink.is_none() && !OUTPUT_CAPTURE_USED.load(Ordering::Relaxed) {
         // OUTPUT_CAPTURE is definitely None since OUTPUT_CAPTURE_USED is false.
@@ -1047,7 +1048,7 @@ pub(crate) fn attempt_print_to_stderr(args: fmt::Arguments<'_>) {
 }
 
 /// Trait to determine if a descriptor/handle refers to a terminal/tty.
-#[stable(feature = "is_terminal", since = "CURRENT_RUSTC_VERSION")]
+#[stable(feature = "is_terminal", since = "1.70.0")]
 pub trait IsTerminal: crate::sealed::Sealed {
     /// Returns `true` if the descriptor/handle refers to a terminal/tty.
     ///
@@ -1063,7 +1064,7 @@ pub trait IsTerminal: crate::sealed::Sealed {
     /// Note that this [may change in the future][changes].
     ///
     /// [changes]: io#platform-specific-behavior
-    #[stable(feature = "is_terminal", since = "CURRENT_RUSTC_VERSION")]
+    #[stable(feature = "is_terminal", since = "1.70.0")]
     fn is_terminal(&self) -> bool;
 }
 
@@ -1072,7 +1073,7 @@ macro_rules! impl_is_terminal {
         #[unstable(feature = "sealed", issue = "none")]
         impl crate::sealed::Sealed for $t {}
 
-        #[stable(feature = "is_terminal", since = "CURRENT_RUSTC_VERSION")]
+        #[stable(feature = "is_terminal", since = "1.70.0")]
         impl IsTerminal for $t {
             #[inline]
             fn is_terminal(&self) -> bool {
@@ -1089,7 +1090,6 @@ impl_is_terminal!(File, Stdin, StdinLock<'_>, Stdout, StdoutLock<'_>, Stderr, St
     reason = "implementation detail which may disappear or be replaced at any time",
     issue = "none"
 )]
-#[doc(hidden)]
 #[cfg(not(test))]
 pub fn _print(args: fmt::Arguments<'_>) {
     print_to(args, stdout, "stdout");
@@ -1100,7 +1100,6 @@ pub fn _print(args: fmt::Arguments<'_>) {
     reason = "implementation detail which may disappear or be replaced at any time",
     issue = "none"
 )]
-#[doc(hidden)]
 #[cfg(not(test))]
 pub fn _eprint(args: fmt::Arguments<'_>) {
     print_to(args, stderr, "stderr");

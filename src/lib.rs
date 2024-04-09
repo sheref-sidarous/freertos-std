@@ -154,6 +154,31 @@
 //! contains further primitive shared memory types, including [`atomic`] and
 //! [`mpsc`], which contains the channel types for message passing.
 //!
+//! # Use before and after `main()`
+//!
+//! Many parts of the standard library are expected to work before and after `main()`;
+//! but this is not guaranteed or ensured by tests. It is recommended that you write your own tests
+//! and run them on each platform you wish to support.
+//! This means that use of `std` before/after main, especially of features that interact with the
+//! OS or global state, is exempted from stability and portability guarantees and instead only
+//! provided on a best-effort basis. Nevertheless bug reports are appreciated.
+//!
+//! On the other hand `core` and `alloc` are most likely to work in such environments with
+//! the caveat that any hookable behavior such as panics, oom handling or allocators will also
+//! depend on the compatibility of the hooks.
+//!
+//! Some features may also behave differently outside main, e.g. stdio could become unbuffered,
+//! some panics might turn into aborts, backtraces might not get symbolicated or similar.
+//!
+//! Non-exhaustive list of known limitations:
+//!
+//! - after-main use of thread-locals, which also affects additional features:
+//!   - [`thread::current()`]
+//!   - [`thread::scope()`]
+//!   - [`sync::mpsc`]
+//! - before-main stdio file descriptors are not guaranteed to be open on unix platforms
+//!
+//!
 //! [I/O]: io
 //! [`MIN`]: i32::MIN
 //! [`MAX`]: i32::MAX
@@ -189,27 +214,16 @@
 //! [rust-discord]: https://discord.gg/rust-lang
 //! [array]: prim@array
 //! [slice]: prim@slice
-
-#![cfg_attr(not(feature = "restricted-std"), stable(feature = "rust1", since = "1.0.0"))]
-#![cfg_attr(feature = "restricted-std", unstable(feature = "restricted_std", issue = "none"))]
-#![doc(
-    html_playground_url = "https://play.rust-lang.org/",
-    issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
-    test(no_crate_inject, attr(deny(warnings))),
-    test(attr(allow(dead_code, deprecated, unused_variables, unused_mut)))
-)]
-#![doc(cfg_hide(
-    not(test),
-    not(any(test, bootstrap)),
-    no_global_oom_handling,
-    not(no_global_oom_handling)
-))]
 // To run std tests without x.py without ending up with two copies of std, Miri needs to be
 // able to "empty" this crate. See <https://github.com/rust-lang/miri-test-libstd/issues/4>.
-// rustc itself never sets the feature, so this line has no affect there.
+// rustc itself never sets the feature, so this line has no effect there.
 #![cfg(any(not(feature = "miri-test-libstd"), test, doctest))]
 // miri-test-libstd also prefers to make std use the sysroot versions of the dependencies.
 #![cfg_attr(feature = "miri-test-libstd", feature(rustc_private))]
+//
+#![cfg_attr(not(feature = "restricted-std"), stable(feature = "rust1", since = "1.0.0"))]
+#![cfg_attr(feature = "restricted-std", unstable(feature = "restricted_std", issue = "none"))]
+
 // Don't link to std. We are std.
 #![no_std]
 // Tell the compiler to link to either panic_abort or panic_unwind
@@ -221,10 +235,13 @@
 #![warn(missing_debug_implementations)]
 #![allow(explicit_outlives_requirements)]
 #![allow(unused_lifetimes)]
+#![allow(internal_features)]
 #![deny(rustc::existing_doc_keyword)]
 #![deny(fuzzy_provenance_casts)]
+#![allow(rustdoc::redundant_explicit_links)]
 // std may use features in a platform-specific way
 #![allow(unused_features)]
+#![allow(stable_features)]
 //
 // Features:
 #![cfg_attr(test, feature(internal_output_capture, print_internals, update_panic_count, rt))]
@@ -232,7 +249,8 @@
     all(target_vendor = "fortanix", target_env = "sgx"),
     feature(slice_index_methods, coerce_unsized, sgx_platform)
 )]
-#![cfg_attr(windows, feature(round_char_boundary))]
+#![cfg_attr(any(windows, target_os = "uefi"), feature(round_char_boundary))]
+#![cfg_attr(target_os = "xous", feature(slice_ptr_len))]
 //
 // Language features:
 // tidy-alphabetical-start
@@ -242,6 +260,7 @@
 #![feature(allow_internal_unstable)]
 #![feature(c_unwind)]
 #![feature(cfg_target_thread_local)]
+#![feature(cfi_encoding)]
 #![feature(concat_idents)]
 #![feature(const_mut_refs)]
 #![feature(const_trait_impl)]
@@ -264,27 +283,32 @@
 #![feature(needs_panic_runtime)]
 #![feature(negative_impls)]
 #![feature(never_type)]
-#![feature(platform_intrinsics)]
+#![feature(no_sanitize)]
 #![feature(prelude_import)]
 #![feature(rustc_attrs)]
 #![feature(rustdoc_internals)]
 #![feature(staged_api)]
 #![feature(thread_local)]
 #![feature(try_blocks)]
+#![feature(type_alias_impl_trait)]
 #![feature(utf8_chunks)]
 // tidy-alphabetical-end
 //
 // Library features (core):
 // tidy-alphabetical-start
+#![feature(c_str_literals)]
 #![feature(char_internals)]
 #![feature(core_intrinsics)]
+#![feature(core_io_borrowed_buf)]
 #![feature(duration_constants)]
 #![feature(error_generic_member_access)]
 #![feature(error_in_core)]
 #![feature(error_iter)]
 #![feature(exact_size_is_empty)]
 #![feature(exclusive_wrapper)]
+#![feature(exposed_provenance)]
 #![feature(extend_one)]
+#![feature(float_gamma)]
 #![feature(float_minimum_maximum)]
 #![feature(float_next_up_down)]
 #![feature(hasher_prefixfree_extras)]
@@ -294,19 +318,19 @@
 #![feature(maybe_uninit_slice)]
 #![feature(maybe_uninit_uninit_array)]
 #![feature(maybe_uninit_write_slice)]
+#![feature(offset_of)]
 #![feature(panic_can_unwind)]
 #![feature(panic_info_message)]
 #![feature(panic_internals)]
-#![feature(pointer_byte_offsets)]
 #![feature(pointer_is_aligned)]
 #![feature(portable_simd)]
 #![feature(prelude_2024)]
-#![feature(provide_any)]
 #![feature(ptr_as_uninit)]
-#![feature(raw_os_nonzero)]
+//#![feature(raw_os_nonzero)]
 #![feature(round_ties_even)]
 #![feature(slice_internals)]
 #![feature(slice_ptr_get)]
+#![feature(slice_range)]
 #![feature(std_internals)]
 #![feature(str_internals)]
 #![feature(strict_provenance)]
@@ -339,15 +363,13 @@
 #![feature(cfg_eval)]
 #![feature(concat_bytes)]
 #![feature(const_format_args)]
-#![feature(core_panic)]
+//#![feature(core_panic)]
 #![feature(custom_test_frameworks)]
 #![feature(edition_panic)]
 #![feature(format_args_nl)]
 #![feature(get_many_mut)]
 #![feature(lazy_cell)]
 #![feature(log_syntax)]
-#![feature(saturating_int_impl)]
-#![feature(stdsimd)]
 #![feature(test)]
 #![feature(trace_macros)]
 // tidy-alphabetical-end
@@ -389,14 +411,18 @@ extern crate test;
 #[allow(unused_imports)] // macros from `alloc` are not used on all platforms
 #[macro_use]
 extern crate alloc as alloc_crate;
-#[doc(masked)]
 #[allow(unused_extern_crates)]
 extern crate libc;
 
 
-#[doc(masked)]
+// FIXME: #94122 this extern crate definition only exist here to stop
+// miniz_oxide docs leaking into std docs. Find better way to do it.
+// Remove exclusion from tidy platform check when this removed.
 #[allow(unused_extern_crates)]
-#[cfg(feature = "miniz_oxide")]
+#[cfg(all(
+    not(all(windows, target_env = "msvc", not(target_vendor = "uwp"))),
+    feature = "miniz_oxide"
+))]
 extern crate miniz_oxide;
 
 // During testing, this crate is not actually the "real" std library, but rather
@@ -459,8 +485,6 @@ pub use core::convert;
 pub use core::default;
 #[stable(feature = "futures_api", since = "1.36.0")]
 pub use core::future;
-#[stable(feature = "rust1", since = "1.0.0")]
-pub use core::hash;
 #[stable(feature = "core_hint", since = "1.27.0")]
 pub use core::hint;
 #[stable(feature = "i128", since = "1.26.0")]
@@ -530,6 +554,7 @@ pub mod env;
 pub mod error;
 pub mod ffi;
 pub mod fs;
+pub mod hash;
 pub mod io;
 pub mod net;
 pub mod num;
@@ -544,17 +569,14 @@ pub mod time;
 pub mod task {
     //! Types and Traits for working with asynchronous tasks.
 
-    #[doc(inline)]
     #[stable(feature = "futures_api", since = "1.36.0")]
     pub use core::task::*;
 
     extern crate alloc;
 
-    #[doc(inline)]
     #[stable(feature = "wake_trait", since = "1.51.0")]
     pub use alloc::task::*;
 }
-
 
 #[stable(feature = "simd_arch", since = "1.27.0")]
 pub mod arch {
@@ -563,7 +585,6 @@ pub mod arch {
     // targets available.
     // See https://github.com/rust-lang/rust/pull/57808#issuecomment-457390549 for
     // more information.
-    #[doc(no_inline)] // Note (#82861): required for correct documentation
     pub use core::arch::*;
 
 }
@@ -577,7 +598,6 @@ pub mod alloc;
 
 // Private support modules
 mod panicking;
-mod personality;
 
 #[allow(dead_code, unused_attributes, fuzzy_provenance_casts)]
 mod backtrace_rs;
@@ -605,6 +625,9 @@ pub use core::{
     reason = "`concat_bytes` is not stable enough for use and is subject to change"
 )]
 pub use core::concat_bytes;
+
+#[unstable(feature = "cfg_match", issue = "115585")]
+pub use core::cfg_match;
 
 #[stable(feature = "core_primitive", since = "1.43.0")]
 pub use core::primitive;
@@ -651,7 +674,7 @@ pub(crate) mod test_helpers {
     #[track_caller]
     pub(crate) fn test_rng() -> rand_xorshift::XorShiftRng {
         use core::hash::{BuildHasher, Hash, Hasher};
-        let mut hasher = crate::collections::hash_map::RandomState::new().build_hasher();
+        let mut hasher = crate::hash::RandomState::new().build_hasher();
         core::panic::Location::caller().hash(&mut hasher);
         let hc64 = hasher.finish();
         let seed_vec = hc64.to_le_bytes().into_iter().chain(0u8..8).collect::<Vec<u8>>();

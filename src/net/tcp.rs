@@ -1,6 +1,6 @@
 #![deny(unsafe_op_in_unsafe_fn)]
 
-#[cfg(all(test, not(target_os = "emscripten")))]
+#[cfg(all(test, not(any(target_os = "emscripten", target_os = "xous"))))]
 mod tests;
 
 use crate::io::prelude::*;
@@ -647,6 +647,7 @@ impl Write for TcpStream {
         self.0.is_write_vectored()
     }
 
+    #[inline]
     fn flush(&mut self) -> io::Result<()> {
         Ok(())
     }
@@ -685,12 +686,14 @@ impl Write for &TcpStream {
         self.0.is_write_vectored()
     }
 
+    #[inline]
     fn flush(&mut self) -> io::Result<()> {
         Ok(())
     }
 }
 
 impl AsInner<net_imp::TcpStream> for TcpStream {
+    #[inline]
     fn as_inner(&self) -> &net_imp::TcpStream {
         &self.0
     }
@@ -754,6 +757,15 @@ impl TcpListener {
     ///     SocketAddr::from(([127, 0, 0, 1], 443)),
     /// ];
     /// let listener = TcpListener::bind(&addrs[..]).unwrap();
+    /// ```
+    ///
+    /// Creates a TCP listener bound to a port assigned by the operating system
+    /// at `127.0.0.1`.
+    ///
+    /// ```no_run
+    /// use std::net::TcpListener;
+    ///
+    /// let socket = TcpListener::bind("127.0.0.1:0").unwrap();
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn bind<A: ToSocketAddrs>(addr: A) -> io::Result<TcpListener> {
@@ -1033,6 +1045,7 @@ impl Iterator for IntoIncoming {
 impl FusedIterator for IntoIncoming {}
 
 impl AsInner<net_imp::TcpListener> for TcpListener {
+    #[inline]
     fn as_inner(&self) -> &net_imp::TcpListener {
         &self.0
     }

@@ -49,9 +49,6 @@ use crate::sys::os as os_imp;
 ///     Ok(())
 /// }
 /// ```
-#[doc(alias = "pwd")]
-#[doc(alias = "getcwd")]
-#[doc(alias = "GetCurrentDirectory")]
 #[stable(feature = "env", since = "1.0.0")]
 pub fn current_dir() -> io::Result<PathBuf> {
     os_imp::getcwd()
@@ -78,7 +75,6 @@ pub fn current_dir() -> io::Result<PathBuf> {
 /// assert!(env::set_current_dir(&root).is_ok());
 /// println!("Successfully changed working directory to {}!", root.display());
 /// ```
-#[doc(alias = "chdir")]
 #[stable(feature = "env", since = "1.0.0")]
 pub fn set_current_dir<P: AsRef<Path>>(path: P) -> io::Result<()> {
     os_imp::chdir(path.as_ref())
@@ -178,7 +174,8 @@ impl Iterator for Vars {
 #[stable(feature = "std_debug", since = "1.16.0")]
 impl fmt::Debug for Vars {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Vars").finish_non_exhaustive()
+        let Self { inner: VarsOs { inner } } = self;
+        f.debug_struct("Vars").field("inner", &inner.str_debug()).finish()
     }
 }
 
@@ -196,7 +193,8 @@ impl Iterator for VarsOs {
 #[stable(feature = "std_debug", since = "1.16.0")]
 impl fmt::Debug for VarsOs {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("VarOs").finish_non_exhaustive()
+        let Self { inner } = self;
+        f.debug_struct("VarsOs").field("inner", inner).finish()
     }
 }
 
@@ -311,16 +309,31 @@ impl Error for VarError {
 /// Sets the environment variable `key` to the value `value` for the currently running
 /// process.
 ///
-/// Note that while concurrent access to environment variables is safe in Rust,
-/// some platforms only expose inherently unsafe non-threadsafe APIs for
-/// inspecting the environment. As a result, extra care needs to be taken when
-/// auditing calls to unsafe external FFI functions to ensure that any external
-/// environment accesses are properly synchronized with accesses in Rust.
+/// # Safety
+///
+/// Even though this function is currently not marked as `unsafe`, it needs to
+/// be because invoking it can cause undefined behaviour. The function will be
+/// marked `unsafe` in a future version of Rust. This is tracked in
+/// [rust#27970](https://github.com/rust-lang/rust/issues/27970).
+///
+/// This function is safe to call in a single-threaded program.
+///
+/// In multi-threaded programs, you must ensure that are no other threads
+/// concurrently writing or *reading*(!) from the environment through functions
+/// other than the ones in this module. You are responsible for figuring out
+/// how to achieve this, but we strongly suggest not using `set_var` or
+/// `remove_var` in multi-threaded programs at all.
+///
+/// Most C libraries, including libc itself do not advertise which functions
+/// read from the environment. Even functions from the Rust standard library do
+/// that, e.g. for DNS lookups from [`std::net::ToSocketAddrs`].
 ///
 /// Discussion of this unsafety on Unix may be found in:
 ///
 ///  - [Austin Group Bugzilla](https://austingroupbugs.net/view.php?id=188)
 ///  - [GNU C library Bugzilla](https://sourceware.org/bugzilla/show_bug.cgi?id=15607#c2)
+///
+/// [`std::net::ToSocketAddrs`]: crate::net::ToSocketAddrs
 ///
 /// # Panics
 ///
@@ -349,16 +362,31 @@ fn _set_var(key: &OsStr, value: &OsStr) {
 
 /// Removes an environment variable from the environment of the currently running process.
 ///
-/// Note that while concurrent access to environment variables is safe in Rust,
-/// some platforms only expose inherently unsafe non-threadsafe APIs for
-/// inspecting the environment. As a result extra care needs to be taken when
-/// auditing calls to unsafe external FFI functions to ensure that any external
-/// environment accesses are properly synchronized with accesses in Rust.
+/// # Safety
+///
+/// Even though this function is currently not marked as `unsafe`, it needs to
+/// be because invoking it can cause undefined behaviour. The function will be
+/// marked `unsafe` in a future version of Rust. This is tracked in
+/// [rust#27970](https://github.com/rust-lang/rust/issues/27970).
+///
+/// This function is safe to call in a single-threaded program.
+///
+/// In multi-threaded programs, you must ensure that are no other threads
+/// concurrently writing or *reading*(!) from the environment through functions
+/// other than the ones in this module. You are responsible for figuring out
+/// how to achieve this, but we strongly suggest not using `set_var` or
+/// `remove_var` in multi-threaded programs at all.
+///
+/// Most C libraries, including libc itself do not advertise which functions
+/// read from the environment. Even functions from the Rust standard library do
+/// that, e.g. for DNS lookups from [`std::net::ToSocketAddrs`].
 ///
 /// Discussion of this unsafety on Unix may be found in:
 ///
 ///  - [Austin Group Bugzilla](https://austingroupbugs.net/view.php?id=188)
 ///  - [GNU C library Bugzilla](https://sourceware.org/bugzilla/show_bug.cgi?id=15607#c2)
+///
+/// [`std::net::ToSocketAddrs`]: crate::net::ToSocketAddrs
 ///
 /// # Panics
 ///
@@ -829,7 +857,8 @@ impl DoubleEndedIterator for Args {
 #[stable(feature = "std_debug", since = "1.16.0")]
 impl fmt::Debug for Args {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Args").field("inner", &self.inner.inner).finish()
+        let Self { inner: ArgsOs { inner } } = self;
+        f.debug_struct("Args").field("inner", inner).finish()
     }
 }
 
@@ -870,7 +899,8 @@ impl DoubleEndedIterator for ArgsOs {
 #[stable(feature = "std_debug", since = "1.16.0")]
 impl fmt::Debug for ArgsOs {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("ArgsOs").field("inner", &self.inner).finish()
+        let Self { inner } = self;
+        f.debug_struct("ArgsOs").field("inner", inner).finish()
     }
 }
 
@@ -890,6 +920,7 @@ pub mod consts {
     /// - aarch64
     /// - loongarch64
     /// - m68k
+    /// - csky
     /// - mips
     /// - mips64
     /// - powerpc

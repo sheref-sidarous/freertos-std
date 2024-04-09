@@ -20,7 +20,6 @@ pub type mode_t = u32;
 #[stable(feature = "pthread_t", since = "1.8.0")]
 pub type pthread_t = c_ulong;
 
-#[doc(inline)]
 #[stable(feature = "raw_ext", since = "1.1.0")]
 pub use self::arch::{blkcnt_t, blksize_t, ino_t, nlink_t, off_t, stat, time_t};
 
@@ -285,4 +284,10 @@ mod arch {
         #[stable(feature = "raw_ext", since = "1.1.0")]
         pub __unused: [c_long; 3],
     }
+}
+
+#[cfg(target_arch = "riscv64")]
+mod arch {
+    #[stable(feature = "raw_ext", since = "1.1.0")]
+    pub use libc::{blkcnt_t, blksize_t, ino_t, nlink_t, off_t, stat, time_t};
 }

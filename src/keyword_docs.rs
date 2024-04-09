@@ -1,4 +1,3 @@
-#[doc(keyword = "as")]
 //
 /// Cast between types, or rename an import.
 ///
@@ -46,7 +45,6 @@
 /// [mut-cast]: primitive.pointer.html#method.cast-1
 mod as_keyword {}
 
-#[doc(keyword = "break")]
 //
 /// Exit early from a loop.
 ///
@@ -117,7 +115,6 @@ mod as_keyword {}
 /// ../reference/expressions/loop-expr.html#break-and-loop-values
 mod break_keyword {}
 
-#[doc(keyword = "const")]
 //
 /// Compile-time constants, compile-time evaluable functions, and raw pointers.
 ///
@@ -187,7 +184,6 @@ mod break_keyword {}
 /// [const-eval]: ../reference/const_eval.html
 mod const_keyword {}
 
-#[doc(keyword = "continue")]
 //
 /// Skip to the next iteration of a loop.
 ///
@@ -227,7 +223,6 @@ mod const_keyword {}
 /// [continue expressions]: ../reference/expressions/loop-expr.html#continue-expressions
 mod continue_keyword {}
 
-#[doc(keyword = "crate")]
 //
 /// A Rust binary or library.
 ///
@@ -264,7 +259,6 @@ mod continue_keyword {}
 /// [Reference]: ../reference/items/extern-crates.html
 mod crate_keyword {}
 
-#[doc(keyword = "else")]
 //
 /// What expression to evaluate when an [`if`] condition evaluates to [`false`].
 ///
@@ -317,7 +311,6 @@ mod crate_keyword {}
 /// [`if`]: keyword.if.html
 mod else_keyword {}
 
-#[doc(keyword = "enum")]
 //
 /// A type that can be any one of several variants.
 ///
@@ -372,7 +365,6 @@ mod else_keyword {}
 /// [Reference]: ../reference/items/enumerations.html
 mod enum_keyword {}
 
-#[doc(keyword = "extern")]
 //
 /// Link to or import external code.
 ///
@@ -415,7 +407,6 @@ mod enum_keyword {}
 /// [`crate`]: keyword.crate.html
 mod extern_keyword {}
 
-#[doc(keyword = "false")]
 //
 /// A value of type [`bool`] representing logical **false**.
 ///
@@ -426,7 +417,6 @@ mod extern_keyword {}
 /// [`true`]: keyword.true.html
 mod false_keyword {}
 
-#[doc(keyword = "fn")]
 //
 /// A function or function pointer.
 ///
@@ -493,7 +483,6 @@ mod false_keyword {}
 /// [Reference]: ../reference/items/functions.html
 mod fn_keyword {}
 
-#[doc(keyword = "for")]
 //
 /// Iteration with [`in`], trait implementation with [`impl`], or [higher-ranked trait bounds]
 /// (`for<'a>`).
@@ -575,7 +564,6 @@ mod fn_keyword {}
 /// [Reference]: ../reference/expressions/loop-expr.html#iterator-loops
 mod for_keyword {}
 
-#[doc(keyword = "if")]
 //
 /// Evaluate a block if a condition holds.
 ///
@@ -649,7 +637,6 @@ mod for_keyword {}
 /// [Reference]: ../reference/expressions/if-expr.html
 mod if_keyword {}
 
-#[doc(keyword = "impl")]
 //
 /// Implement some functionality for a type.
 ///
@@ -712,7 +699,6 @@ mod if_keyword {}
 /// [book2]: ../book/ch10-02-traits.html#returning-types-that-implement-traits
 mod impl_keyword {}
 
-#[doc(keyword = "in")]
 //
 /// Iterate over a series of values with [`for`].
 ///
@@ -744,7 +730,6 @@ mod impl_keyword {}
 /// [Reference]: ../reference/visibility-and-privacy.html#pubin-path-pubcrate-pubsuper-and-pubself
 mod in_keyword {}
 
-#[doc(keyword = "let")]
 //
 /// Bind a value to a variable.
 ///
@@ -807,7 +792,6 @@ mod in_keyword {}
 /// [Reference]: ../reference/statements.html#let-statements
 mod let_keyword {}
 
-#[doc(keyword = "while")]
 //
 /// Loop while a condition is upheld.
 ///
@@ -865,7 +849,6 @@ mod let_keyword {}
 /// [reference]: ../reference/expressions/loop-expr.html#predicate-loops
 mod while_keyword {}
 
-#[doc(keyword = "loop")]
 //
 /// Loop indefinitely.
 ///
@@ -915,7 +898,6 @@ mod while_keyword {}
 /// [Reference]: ../reference/expressions/loop-expr.html
 mod loop_keyword {}
 
-#[doc(keyword = "match")]
 //
 /// Control flow based on pattern matching.
 ///
@@ -965,7 +947,6 @@ mod loop_keyword {}
 /// [Reference]: ../reference/expressions/match-expr.html
 mod match_keyword {}
 
-#[doc(keyword = "mod")]
 //
 /// Organize code into [modules].
 ///
@@ -993,7 +974,6 @@ mod match_keyword {}
 /// [modules]: ../reference/items/modules.html
 mod mod_keyword {}
 
-#[doc(keyword = "move")]
 //
 /// Capture a [closure]'s environment by value.
 ///
@@ -1050,7 +1030,6 @@ mod mod_keyword {}
 /// [threads]: ../book/ch16-01-threads.html#using-move-closures-with-threads
 mod move_keyword {}
 
-#[doc(keyword = "mut")]
 //
 /// A mutable variable, reference, or pointer.
 ///
@@ -1108,7 +1087,6 @@ mod move_keyword {}
 /// [Reference]: ../reference/types/pointer.html#mutable-references-mut
 mod mut_keyword {}
 
-#[doc(keyword = "pub")]
 //
 /// Make an item visible to others.
 ///
@@ -1123,7 +1101,6 @@ mod mut_keyword {}
 /// [Rust by Example]:../rust-by-example/mod/visibility.html
 mod pub_keyword {}
 
-#[doc(keyword = "ref")]
 //
 /// Bind by reference during pattern matching.
 ///
@@ -1173,7 +1150,6 @@ mod pub_keyword {}
 /// [Reference]: ../reference/patterns.html#identifier-patterns
 mod ref_keyword {}
 
-#[doc(keyword = "return")]
 //
 /// Return a value from a function.
 ///
@@ -1228,7 +1204,6 @@ mod ref_keyword {}
 /// ```
 mod return_keyword {}
 
-#[doc(keyword = "self")]
 //
 /// The receiver of a method, or the current module.
 ///
@@ -1322,10 +1297,7 @@ mod return_keyword {}
 mod self_keyword {}
 
 // FIXME: Once rustdoc can handle URL conflicts on case insensitive file systems, we can remove the
-// three next lines and put back: `#[doc(keyword = "Self")]`.
-#[doc(alias = "Self")]
 #[allow(rustc::existing_doc_keyword)]
-#[doc(keyword = "SelfTy")]
 //
 /// The implementing type within a [`trait`] or [`impl`] block, or the current type within a type
 /// definition.
@@ -1392,7 +1364,6 @@ mod self_keyword {}
 /// [`trait`]: keyword.trait.html
 mod self_upper_keyword {}
 
-#[doc(keyword = "static")]
 //
 /// A static item is a value which is valid for the entire duration of your
 /// program (a `'static` lifetime).
@@ -1472,7 +1443,6 @@ mod self_upper_keyword {}
 /// [Reference]: ../reference/items/static-items.html
 mod static_keyword {}
 
-#[doc(keyword = "struct")]
 //
 /// A type that is composed of other types.
 ///
@@ -1580,7 +1550,6 @@ mod static_keyword {}
 /// [reference]: ../reference/items/structs.html
 mod struct_keyword {}
 
-#[doc(keyword = "super")]
 //
 /// The parent of the current [module].
 ///
@@ -1606,7 +1575,6 @@ mod struct_keyword {}
 /// [Reference]: ../reference/paths.html#super
 mod super_keyword {}
 
-#[doc(keyword = "trait")]
 //
 /// A common interface for a group of types.
 ///
@@ -1791,7 +1759,6 @@ mod super_keyword {}
 /// [Ref-Trait-Objects]: ../reference/types/trait-object.html
 mod trait_keyword {}
 
-#[doc(keyword = "true")]
 //
 /// A value of type [`bool`] representing logical **true**.
 ///
@@ -1818,9 +1785,8 @@ mod trait_keyword {}
 /// [`false`]: keyword.false.html
 mod true_keyword {}
 
-#[doc(keyword = "type")]
 //
-/// Define an alias for an existing type.
+/// Define an [alias] for an existing type.
 ///
 /// The syntax is `type Name = ExistingType;`.
 ///
@@ -1836,6 +1802,13 @@ mod true_keyword {}
 /// let k: Kilograms = 3;
 ///
 /// assert_eq!(m, k);
+/// ```
+///
+/// A type can be generic:
+///
+/// ```rust
+/// # use std::sync::{Arc, Mutex};
+/// type ArcMutex<T> = Arc<Mutex<T>>;
 /// ```
 ///
 /// In traits, `type` is used to declare an [associated type]:
@@ -1860,9 +1833,9 @@ mod true_keyword {}
 ///
 /// [`trait`]: keyword.trait.html
 /// [associated type]: ../reference/items/associated-items.html#associated-types
+/// [alias]: ../reference/items/type-aliases.html
 mod type_keyword {}
 
-#[doc(keyword = "unsafe")]
 //
 /// Code or interfaces whose [memory safety] cannot be verified by the type
 /// system.
@@ -1925,7 +1898,7 @@ mod type_keyword {}
 /// `unsafe_op_in_unsafe_fn` lint can be enabled to warn against that and require explicit unsafe
 /// blocks even inside `unsafe fn`.
 ///
-/// See the [Rustnomicon] and the [Reference] for more information.
+/// See the [Rustonomicon] and the [Reference] for more information.
 ///
 /// # Examples
 ///
@@ -2129,14 +2102,13 @@ mod type_keyword {}
 /// [`impl`]: keyword.impl.html
 /// [raw pointers]: ../reference/types/pointer.html
 /// [memory safety]: ../book/ch19-01-unsafe-rust.html
-/// [Rustnomicon]: ../nomicon/index.html
+/// [Rustonomicon]: ../nomicon/index.html
 /// [nomicon-soundness]: ../nomicon/safe-unsafe-meaning.html
 /// [soundness]: https://rust-lang.github.io/unsafe-code-guidelines/glossary.html#soundness-of-code--of-a-library
 /// [Reference]: ../reference/unsafety.html
 /// [discussion on Rust Internals]: https://internals.rust-lang.org/t/what-does-unsafe-mean/6696
 mod unsafe_keyword {}
 
-#[doc(keyword = "use")]
 //
 /// Import or rename items from other crates or modules.
 ///
@@ -2197,7 +2169,6 @@ mod unsafe_keyword {}
 /// [Reference]: ../reference/items/use-declarations.html
 mod use_keyword {}
 
-#[doc(keyword = "where")]
 //
 /// Add constraints that must be upheld to use an item.
 ///
@@ -2287,7 +2258,7 @@ mod use_keyword {}
 /// # #![allow(dead_code)]
 /// pub enum Cow<'a, B>
 /// where
-///     B: 'a + ToOwned + ?Sized,
+///     B: ToOwned + ?Sized,
 /// {
 ///     Borrowed(&'a B),
 ///     Owned(<B as ToOwned>::Owned),
@@ -2299,8 +2270,6 @@ mod where_keyword {}
 
 // 2018 Edition keywords
 
-#[doc(alias = "promise")]
-#[doc(keyword = "async")]
 //
 /// Return a [`Future`] instead of blocking the current thread.
 ///
@@ -2321,7 +2290,6 @@ mod where_keyword {}
 /// [async book]: https://rust-lang.github.io/async-book/
 mod async_keyword {}
 
-#[doc(keyword = "await")]
 //
 /// Suspend execution until the result of a [`Future`] is ready.
 ///
@@ -2341,7 +2309,6 @@ mod async_keyword {}
 /// [`async`]: ../std/keyword.async.html
 mod await_keyword {}
 
-#[doc(keyword = "dyn")]
 //
 /// `dyn` is a prefix of a [trait object]'s type.
 ///
@@ -2376,7 +2343,6 @@ mod await_keyword {}
 /// [erased]: https://en.wikipedia.org/wiki/Type_erasure
 mod dyn_keyword {}
 
-#[doc(keyword = "union")]
 //
 /// The [Rust equivalent of a C-style union][union].
 ///

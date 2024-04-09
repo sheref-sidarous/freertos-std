@@ -34,8 +34,8 @@ use core::ptr;
 mod dbghelp {
     use crate::windows::*;
     pub use winapi::um::dbghelp::{
-        StackWalk64, StackWalkEx, SymCleanup, SymFromAddrW, SymFunctionTableAccess64,
-        SymGetLineFromAddrW64, SymGetModuleBase64, SymGetOptions, SymInitializeW, SymSetOptions,
+        StackWalk64, StackWalkEx, SymFromAddrW, SymFunctionTableAccess64, SymGetLineFromAddrW64,
+        SymGetModuleBase64, SymGetOptions, SymInitializeW, SymSetOptions,
     };
 
     extern "system" {
@@ -54,6 +54,16 @@ mod dbghelp {
             qwModuleBaseAddress: DWORD64,
             pdwDisplacement: PDWORD,
             Line: PIMAGEHLP_LINEW64,
+        ) -> BOOL;
+        pub fn SymAddrIncludeInlineTrace(hProcess: HANDLE, Address: DWORD64) -> DWORD;
+        pub fn SymQueryInlineTrace(
+            hProcess: HANDLE,
+            StartAddress: DWORD64,
+            StartContext: DWORD,
+            StartRetAddress: DWORD64,
+            CurAddress: DWORD64,
+            CurContext: LPDWORD,
+            CurFrameIndex: LPDWORD,
         ) -> BOOL;
     }
 
@@ -79,7 +89,7 @@ macro_rules! dbghelp {
         static mut DBGHELP: Dbghelp = Dbghelp {
             // Initially we haven't loaded the DLL
             dll: 0 as *mut _,
-            // Initiall all functions are set to zero to say they need to be
+            // Initially all functions are set to zero to say they need to be
             // dynamically loaded.
             $($name: 0,)*
         };
@@ -164,7 +174,6 @@ dbghelp! {
             path: PCWSTR,
             invade: BOOL
         ) -> BOOL;
-        fn SymCleanup(handle: HANDLE) -> BOOL;
         fn StackWalk64(
             MachineType: DWORD,
             hProcess: HANDLE,
@@ -184,18 +193,6 @@ dbghelp! {
             hProcess: HANDLE,
             AddrBase: DWORD64
         ) -> DWORD64;
-        fn SymFromAddrW(
-            hProcess: HANDLE,
-            Address: DWORD64,
-            Displacement: PDWORD64,
-            Symbol: PSYMBOL_INFOW
-        ) -> BOOL;
-        fn SymGetLineFromAddrW64(
-            hProcess: HANDLE,
-            dwAddr: DWORD64,
-            pdwDisplacement: PDWORD,
-            Line: PIMAGEHLP_LINEW64
-        ) -> BOOL;
         fn StackWalkEx(
             MachineType: DWORD,
             hProcess: HANDLE,
@@ -223,6 +220,31 @@ dbghelp! {
             pdwDisplacement: PDWORD,
             Line: PIMAGEHLP_LINEW64
         ) -> BOOL;
+        fn SymAddrIncludeInlineTrace(
+            hProcess: HANDLE,
+            Address: DWORD64
+        ) -> DWORD;
+        fn SymQueryInlineTrace(
+            hProcess: HANDLE,
+            StartAddress: DWORD64,
+            StartContext: DWORD,
+            StartRetAddress: DWORD64,
+            CurAddress: DWORD64,
+            CurContext: LPDWORD,
+            CurFrameIndex: LPDWORD
+        ) -> BOOL;
+        fn SymFromAddrW(
+            hProcess: HANDLE,
+            Address: DWORD64,
+            Displacement: PDWORD64,
+            Symbol: PSYMBOL_INFOW
+        ) -> BOOL;
+        fn SymGetLineFromAddrW64(
+            hProcess: HANDLE,
+            dwAddr: DWORD64,
+            pdwDisplacement: PDWORD,
+            Line: PIMAGEHLP_LINEW64
+        ) -> BOOL;
     }
 }
 
@@ -238,6 +260,23 @@ pub struct Init {
 /// times recursively.
 pub fn init() -> Result<Init, ()> {
     use core::sync::atomic::{AtomicUsize, Ordering::SeqCst};
+
+    // Helper function for generating a name that's unique to the process.
+    fn mutex_name() -> [u8; 33] {
+        let mut name: [u8; 33] = *b"Local\\RustBacktraceMutex00000000\0";
+        let mut id = unsafe { GetCurrentProcessId() };
+        // Quick and dirty no alloc u32 to hex.
+        let mut index = name.len() - 1;
+        while id > 0 {
+            name[index - 1] = match (id & 0xF) as u8 {
+                h @ 0..=9 => b'0' + h,
+                h => b'A' + (h - 10),
+            };
+            id >>= 4;
+            index -= 1;
+        }
+        name
+    }
 
     unsafe {
         // First thing we need to do is to synchronize this function. This can
@@ -277,11 +316,8 @@ pub fn init() -> Result<Init, ()> {
         static LOCK: AtomicUsize = AtomicUsize::new(0);
         let mut lock = LOCK.load(SeqCst);
         if lock == 0 {
-            lock = CreateMutexA(
-                ptr::null_mut(),
-                0,
-                "Local\\RustBacktraceMutex\0".as_ptr() as _,
-            ) as usize;
+            let name = mutex_name();
+            lock = CreateMutexA(ptr::null_mut(), 0, name.as_ptr().cast::<i8>()) as usize;
             if lock == 0 {
                 return Err(());
             }

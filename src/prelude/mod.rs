@@ -101,7 +101,6 @@ pub mod v1;
 #[stable(feature = "prelude_2015", since = "1.55.0")]
 pub mod rust_2015 {
     #[stable(feature = "prelude_2015", since = "1.55.0")]
-    #[doc(no_inline)]
     pub use super::v1::*;
 }
 
@@ -111,7 +110,6 @@ pub mod rust_2015 {
 #[stable(feature = "prelude_2018", since = "1.55.0")]
 pub mod rust_2018 {
     #[stable(feature = "prelude_2018", since = "1.55.0")]
-    #[doc(no_inline)]
     pub use super::v1::*;
 }
 
@@ -121,11 +119,9 @@ pub mod rust_2018 {
 #[stable(feature = "prelude_2021", since = "1.55.0")]
 pub mod rust_2021 {
     #[stable(feature = "prelude_2021", since = "1.55.0")]
-    #[doc(no_inline)]
     pub use super::v1::*;
 
     #[stable(feature = "prelude_2021", since = "1.55.0")]
-    #[doc(no_inline)]
     pub use core::prelude::rust_2021::*;
 }
 
@@ -135,10 +131,8 @@ pub mod rust_2021 {
 #[unstable(feature = "prelude_2024", issue = "none")]
 pub mod rust_2024 {
     #[unstable(feature = "prelude_2024", issue = "none")]
-    #[doc(no_inline)]
     pub use super::v1::*;
 
     #[unstable(feature = "prelude_2024", issue = "none")]
-    #[doc(no_inline)]
     pub use core::prelude::rust_2024::*;
 }

@@ -1,34 +1,22 @@
-//! The following module declarations are outside cfg_if because the internal
-//! `__thread_local_internal` macro does not seem to be exported properly when using cfg_if
 #![unstable(feature = "thread_local_internals", reason = "should not be necessary", issue = "none")]
 
-#[cfg(all(target_thread_local, not(all(target_family = "wasm", not(target_feature = "atomics")))))]
-mod fast_local;
-#[cfg(all(
-    not(target_thread_local),
-    not(all(target_family = "wasm", not(target_feature = "atomics")))
-))]
-mod os_local;
-#[cfg(all(target_family = "wasm", not(target_feature = "atomics")))]
-mod static_local;
+// There are three thread-local implementations: "static", "fast", "OS".
+// The "OS" thread local key type is accessed via platform-specific API calls and is slow, while the
+// "fast" key type is accessed via code generated via LLVM, where TLS keys are set up by the linker.
+// "static" is for single-threaded platforms where a global static is sufficient.
 
-#[cfg(not(test))]
 cfg_if::cfg_if! {
-    if #[cfg(all(target_family = "wasm", not(target_feature = "atomics")))] {
-        #[doc(hidden)]
-        pub use static_local::statik::Key;
-    } else if #[cfg(all(target_thread_local, not(all(target_family = "wasm", not(target_feature = "atomics")))))] {
-        #[doc(hidden)]
-        pub use fast_local::fast::Key;
-    } else if #[cfg(all(not(target_thread_local), not(all(target_family = "wasm", not(target_feature = "atomics")))))] {
-        #[doc(hidden)]
-        pub use os_local::os::Key;
+    if #[cfg(any(all(target_family = "wasm", not(target_feature = "atomics")), target_os = "uefi"))] {
+        mod static_local;
+        pub use static_local::{Key, thread_local_inner};
+    } else if #[cfg(target_thread_local)] {
+        mod fast_local;
+        pub use fast_local::{Key, thread_local_inner};
+    } else {
+        mod os_local;
+        pub use os_local::{Key, thread_local_inner};
     }
 }
-
-#[doc(hidden)]
-#[cfg(test)]
-pub use realstd::thread::__LocalKeyInner as Key;
 
 mod lazy {
     use crate::cell::UnsafeCell;
@@ -104,6 +92,27 @@ mod lazy {
         pub unsafe fn take(&mut self) -> Option<T> {
             // SAFETY: See doc comment for this method.
             unsafe { (*self.inner.get()).take() }
+        }
+    }
+}
+
+/// Run a callback in a scenario which must not unwind (such as a `extern "C"
+/// fn` declared in a user crate). If the callback unwinds anyway, then
+/// `rtabort` with a message about thread local panicking on drop.
+#[inline]
+pub fn abort_on_dtor_unwind(f: impl FnOnce()) {
+    // Using a guard like this is lower cost.
+    let guard = DtorUnwindGuard;
+    f();
+    core::mem::forget(guard);
+
+    struct DtorUnwindGuard;
+    impl Drop for DtorUnwindGuard {
+        #[inline]
+        fn drop(&mut self) {
+            // This is not terribly descriptive, but it doesn't need to be as we'll
+            // already have printed a panic message at this point.
+            rtabort!("thread local panicked on drop");
         }
     }
 }

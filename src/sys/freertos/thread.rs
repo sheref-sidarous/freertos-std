@@ -10,6 +10,7 @@ use crate::ffi::{c_void, c_char};
 use crate::collections::HashMap;
 use crate::boxed::Box;
 use crate::ptr::null_mut;
+use super::thread_local_key::thread_exit_tls_cleaner;
 
 pub struct Thread {
     handle : freertos_api::TaskHandle_t,
@@ -17,7 +18,6 @@ pub struct Thread {
 }
 struct ThreadDescriptor {
     entry : Box<dyn FnOnce()>,
-    is_running : bool,
     join_semaphore : freertos_api::SemaphoreHandle_t,
 }
 
@@ -29,21 +29,33 @@ type TickType_t = u32;
 
 extern "C" fn thread_entry (arg : *mut c_void) {
 
+
+    let join_semaphore = {
+
+        let list_kept_ptr = unsafe {
+            // create the Vector for TLS
+            let list : *mut Vec<*mut u8> = Box::into_raw(Box::new(Vec::new()));
+            freertos_api::rust_std_vTaskSetThreadLocalStoragePointer(
+                null_mut(), 0, list.clone() as *mut c_void);
+            list
+        };
+
+        let thread_descriptor = unsafe { Box::from_raw(arg as *mut ThreadDescriptor) };
+
+        (thread_descriptor.entry)();
+
+        unsafe {
+
+            let tls_list : Box<Vec<*mut u8>> = Box::from_raw(list_kept_ptr);
+            thread_exit_tls_cleaner(tls_list);
+
+        }
+
+        thread_descriptor.join_semaphore
+    };
+
     unsafe {
-        // create the Vector for TLS
-        let list : Box<Vec<*mut u8>> = Box::new(Vec::new());
-        freertos_api::rust_std_vTaskSetThreadLocalStoragePointer(
-            null_mut(), 0, Box::into_raw(list) as *mut c_void);
-    }
-
-    let mut thread_descriptor = unsafe { Box::from_raw(arg as *mut ThreadDescriptor) };
-
-    thread_descriptor.is_running = true;
-    (thread_descriptor.entry)();
-    thread_descriptor.is_running = false;
-
-    unsafe {
-        freertos_api::rust_std_xSemaphoreGive(thread_descriptor.join_semaphore);
+        freertos_api::rust_std_xSemaphoreGive(join_semaphore);
         freertos_api::rust_std_vTaskDelete( core::ptr::null_mut() );
     }
 }
@@ -61,7 +73,6 @@ impl Thread {
 
         let arg : *mut ThreadDescriptor= Box::into_raw(Box::new(ThreadDescriptor {
             entry: p,
-            is_running : false,
             join_semaphore : join_semaphore.clone(),
         }));
 
@@ -75,8 +86,6 @@ impl Thread {
             &mut thread_handle as *mut freertos_api::TaskHandle_t); /* get the handle back here */
 
         if r == freertos_api::pdPASS {
-
-
             // Success !
             io::Result::Ok(Thread {
                 handle : thread_handle,
@@ -85,7 +94,6 @@ impl Thread {
         } else {
             io::Result::Err(io::Error::from_raw_os_error(r))
         }
-
     }
 
     pub fn yield_now() {

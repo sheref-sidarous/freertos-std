@@ -1,6 +1,6 @@
 use crate::fmt;
 use crate::io::prelude::*;
-use crate::io::{BorrowedBuf, ErrorKind, IoSlice, IoSliceMut};
+use crate::io::{BorrowedBuf, IoSlice, IoSliceMut};
 use crate::mem::MaybeUninit;
 use crate::net::test::{next_test_ip4, next_test_ip6};
 use crate::net::*;
@@ -44,6 +44,17 @@ fn connect_error() {
             e.kind()
         ),
     }
+}
+
+#[test]
+#[cfg_attr(target_env = "sgx", ignore)] // FIXME: https://github.com/fortanix/rust-sgx/issues/31
+fn connect_timeout_error() {
+    let socket_addr = next_test_ip4();
+    let result = TcpStream::connect_timeout(&socket_addr, Duration::MAX);
+    assert!(!matches!(result, Err(e) if e.kind() == ErrorKind::TimedOut));
+
+    let _listener = TcpListener::bind(&socket_addr).unwrap();
+    assert!(TcpStream::connect_timeout(&socket_addr, Duration::MAX).is_ok());
 }
 
 #[test]

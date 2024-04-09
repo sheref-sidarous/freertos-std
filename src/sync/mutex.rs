@@ -146,7 +146,7 @@ use crate::sys::locks as sys;
 /// let result = data.iter().fold(0, |acc, x| acc + x * 2);
 /// data.push(result);
 /// // We drop the `data` explicitly because it's not necessary anymore and the
-/// // thread still has work to do. This allow other threads to start working on
+/// // thread still has work to do. This allows other threads to start working on
 /// // the data immediately, without waiting for the rest of the unrelated work
 /// // to be done here.
 /// //
@@ -490,13 +490,7 @@ impl<T: ?Sized + fmt::Debug> fmt::Debug for Mutex<T> {
                 d.field("data", &&**err.get_ref());
             }
             Err(TryLockError::WouldBlock) => {
-                struct LockedPlaceholder;
-                impl fmt::Debug for LockedPlaceholder {
-                    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        f.write_str("<locked>")
-                    }
-                }
-                d.field("data", &LockedPlaceholder);
+                d.field("data", &format_args!("<locked>"));
             }
         }
         d.field("poisoned", &self.poison.get());

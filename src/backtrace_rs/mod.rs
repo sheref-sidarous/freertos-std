@@ -134,6 +134,12 @@ cfg_if::cfg_if! {
     }
 }
 
+cfg_if::cfg_if! {
+    if #[cfg(all(target_env = "sgx", target_vendor = "fortanix", not(feature = "std")))] {
+        pub use self::backtrace::set_image_base;
+    }
+}
+
 #[allow(dead_code)]
 struct Bomb {
     enabled: bool,
@@ -186,7 +192,14 @@ mod lock {
     }
 }
 
-#[cfg(all(windows, not(target_vendor = "uwp")))]
+#[cfg(all(
+    windows,
+    any(
+        target_env = "msvc",
+        all(target_env = "gnu", any(target_arch = "x86", target_arch = "arm"))
+    ),
+    not(target_vendor = "uwp")
+))]
 mod dbghelp;
 #[cfg(windows)]
 mod windows;

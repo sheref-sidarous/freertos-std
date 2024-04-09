@@ -261,7 +261,6 @@ pub fn alloc(size: usize, alignment: usize) -> IoResult<*mut u8> {
 }
 
 #[unstable(feature = "sgx_platform", issue = "56975")]
-#[doc(inline)]
 pub use self::raw::free;
 
 fn check_os_error(err: Result) -> i32 {

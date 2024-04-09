@@ -4,7 +4,6 @@
 #![stable(feature = "unix_socket", since = "1.10.0")]
 
 mod addr;
-#[doc(cfg(any(target_os = "android", target_os = "linux")))]
 #[cfg(any(doc, target_os = "android", target_os = "linux"))]
 mod ancillary;
 mod datagram;

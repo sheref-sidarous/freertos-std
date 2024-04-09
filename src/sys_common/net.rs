@@ -18,7 +18,7 @@ use crate::ffi::{c_int, c_void};
 cfg_if::cfg_if! {
     if #[cfg(any(
         target_os = "dragonfly", target_os = "freebsd",
-        target_os = "ios", target_os = "macos", target_os = "watchos",
+        target_os = "ios", target_os = "tvos", target_os = "macos", target_os = "watchos",
         target_os = "openbsd", target_os = "netbsd", target_os = "illumos",
         target_os = "solaris", target_os = "haiku", target_os = "l4re", target_os = "nto"))] {
         use crate::sys::net::netc::IPV6_JOIN_GROUP as IPV6_ADD_MEMBERSHIP;
@@ -32,6 +32,7 @@ cfg_if::cfg_if! {
 cfg_if::cfg_if! {
     if #[cfg(any(
         target_os = "linux", target_os = "android",
+        target_os = "hurd",
         target_os = "dragonfly", target_os = "freebsd",
         target_os = "openbsd", target_os = "netbsd",
         target_os = "haiku", target_os = "nto"))] {
@@ -225,9 +226,7 @@ impl TcpStream {
         init();
 
         let sock = Socket::new(addr, c::SOCK_STREAM)?;
-
-        let (addr, len) = addr.into_inner();
-        cvt_r(|| unsafe { c::connect(sock.as_raw(), addr.as_ptr(), len) })?;
+        sock.connect(addr)?;
         Ok(TcpStream { inner: sock })
     }
 
@@ -239,6 +238,7 @@ impl TcpStream {
         Ok(TcpStream { inner: sock })
     }
 
+    #[inline]
     pub fn socket(&self) -> &Socket {
         &self.inner
     }
@@ -352,6 +352,7 @@ impl TcpStream {
 }
 
 impl AsInner<Socket> for TcpStream {
+    #[inline]
     fn as_inner(&self) -> &Socket {
         &self.inner
     }
@@ -427,6 +428,7 @@ impl TcpListener {
         Ok(TcpListener { inner: sock })
     }
 
+    #[inline]
     pub fn socket(&self) -> &Socket {
         &self.inner
     }
@@ -517,6 +519,7 @@ impl UdpSocket {
         Ok(UdpSocket { inner: sock })
     }
 
+    #[inline]
     pub fn socket(&self) -> &Socket {
         &self.inner
     }

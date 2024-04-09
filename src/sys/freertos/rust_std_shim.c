@@ -106,11 +106,21 @@ int rust_std_get_portBYTE_ALIGNMENT () {
   return portBYTE_ALIGNMENT;
 }
 
-
-void* rust_std_pvPortMalloc( size_t xSize ) {
-  return pvPortMalloc(xSize);
+void __attribute__ ((noinline)) debugger_malloc_check(size_t size, void* ptr) {
+  (void)size;
+  (void)ptr;
 }
 
-void rust_std_vPortFree( void* pv ) {
+void* rust_std_pvPortMalloc( size_t xSize ) {
+  void* ptr = pvPortMalloc(xSize);
+  debugger_malloc_check(xSize, ptr);
+  return ptr;
+}
+
+void __attribute__ ((noinline)) rust_std_vPortFree( void* pv ) {
   vPortFree(pv);
+}
+
+void rust_std_vAssertCalled (void) {
+  vAssertCalled("rust.rs", 0);
 }

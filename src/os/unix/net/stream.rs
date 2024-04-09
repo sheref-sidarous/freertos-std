@@ -11,6 +11,7 @@ use crate::os::unix::io::{AsFd, AsRawFd, BorrowedFd, FromRawFd, IntoRawFd, Owned
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "ios",
+    target_os = "tvos",
     target_os = "macos",
     target_os = "watchos",
     target_os = "netbsd",
@@ -30,6 +31,7 @@ use crate::time::Duration;
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "ios",
+    target_os = "tvos",
     target_os = "macos",
     target_os = "watchos",
     target_os = "netbsd",
@@ -122,7 +124,7 @@ impl UnixStream {
     ///     Ok(())
     /// }
     /// ````
-    #[stable(feature = "unix_socket_abstract", since = "CURRENT_RUSTC_VERSION")]
+    #[stable(feature = "unix_socket_abstract", since = "1.70.0")]
     pub fn connect_addr(socket_addr: &SocketAddr) -> io::Result<UnixStream> {
         unsafe {
             let inner = Socket::new_raw(libc::AF_UNIX, libc::SOCK_STREAM)?;
@@ -238,6 +240,7 @@ impl UnixStream {
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "ios",
+        target_os = "tvos",
         target_os = "macos",
         target_os = "watchos",
         target_os = "netbsd",
@@ -709,6 +712,7 @@ impl<'a> io::Write for &'a UnixStream {
         self.0.is_write_vectored()
     }
 
+    #[inline]
     fn flush(&mut self) -> io::Result<()> {
         Ok(())
     }

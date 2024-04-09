@@ -8,10 +8,8 @@ pub mod io;
 /// Includes all extension traits, and some important type definitions.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub mod prelude {
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub use super::ffi::{OsStrExt, OsStringExt};
-    #[doc(no_inline)]
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub use super::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
+    pub use super::io::{AsFd, AsRawFd, BorrowedFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
 }
