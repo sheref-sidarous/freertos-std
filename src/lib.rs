@@ -237,7 +237,6 @@
 #![allow(unused_lifetimes)]
 #![allow(internal_features)]
 #![deny(rustc::existing_doc_keyword)]
-#![deny(fuzzy_provenance_casts)]
 #![allow(rustdoc::redundant_explicit_links)]
 // std may use features in a platform-specific way
 #![allow(unused_features)]

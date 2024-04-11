@@ -19,7 +19,7 @@
 
 use crate::boxed::Box;
 use core::any::Any;
-use core::panic::BoxMeUp;
+use core::panic::PanicPayload;
 
 
 #[path = "gcc.rs"]
@@ -58,7 +58,7 @@ pub unsafe extern "C" fn __rust_panic_cleanup(payload: *mut u8) -> *mut (dyn Any
 // implementation.
 //#[rustc_std_internal_symbol]
 #[no_mangle]
-pub unsafe fn __rust_start_panic(payload: &mut dyn BoxMeUp) -> u32 {
+pub unsafe fn __rust_start_panic(payload: &mut dyn PanicPayload) -> u32 {
     let payload = Box::from_raw(payload.take_box());
 
     imp::panic(payload)
