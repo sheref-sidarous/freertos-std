@@ -1,4 +1,5 @@
 use crate::io as std_io;
+use crate::sys::freertos::freertos_api;
 
 pub mod memchr {
     pub use core::slice::memchr::{memchr, memrchr};
@@ -32,7 +33,7 @@ pub fn decode_error_kind(_code: i32) -> crate::io::ErrorKind {
 }
 
 pub fn abort_internal() -> ! {
-    core::intrinsics::abort();
+    unsafe {freertos_api::rust_std_vAssertCalled()}
 }
 
 pub fn hashmap_random_keys() -> (u64, u64) {

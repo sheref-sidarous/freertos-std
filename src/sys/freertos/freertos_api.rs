@@ -93,4 +93,6 @@ extern "C" {
     pub fn rust_std_pvPortMalloc( xSize : u32 ) -> *mut u8 ;
     pub fn rust_std_vPortFree( pv : *mut u8 );
 
+    pub fn rust_std_vAssertCalled() -> !;
+
 }

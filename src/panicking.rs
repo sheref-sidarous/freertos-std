@@ -824,8 +824,16 @@ pub fn rust_panic_without_hook(payload: Box<dyn Any + Send>) -> ! {
 /// yer breakpoints.
 #[inline(never)]
 #[cfg_attr(not(test), rustc_std_internal_symbol)]
+#[cfg(not(feature = "panic_immediate_abort"))]
 fn rust_panic(msg: &mut dyn PanicPayload) -> ! {
     let code = unsafe { __rust_start_panic(msg) };
-    //rtabort!("failed to initiate panic, error {code}")
-    loop {}
+    rtabort!("failed to initiate panic, error {code}")
+}
+
+#[cfg_attr(not(test), rustc_std_internal_symbol)]
+#[cfg(feature = "panic_immediate_abort")]
+fn rust_panic(_: &mut dyn PanicPayload) -> ! {
+    unsafe {
+        crate::intrinsics::abort();
+    }
 }

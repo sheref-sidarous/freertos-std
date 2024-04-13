@@ -39,10 +39,7 @@
 use super::dwarf::eh::{self, EHAction, EHContext};
 use crate::ffi::c_int;
 
-#[path="../../unwind/mod.rs"]
-mod unwind;
-
-use unwind as uw;
+use crate::sys::freertos::unwind as uw;
 
 // Register ids were lifted from LLVM's TargetLowering::getExceptionPointerRegister()
 // and TargetLowering::getExceptionSelectorRegister() for each architecture,

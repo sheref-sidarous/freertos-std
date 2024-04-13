@@ -632,11 +632,6 @@ pub use core::cfg_match;
 pub use core::primitive;
 
 // Include a number of private modules that exist solely to provide
-// the rustdoc documentation for primitive types. Using `include!`
-// because rustdoc only looks for these modules at the crate level.
-include!("primitive_docs.rs");
-
-// Include a number of private modules that exist solely to provide
 // the rustdoc documentation for the existing keywords. Using `include!`
 // because rustdoc only looks for these modules at the crate level.
 include!("keyword_docs.rs");
@@ -681,7 +676,3 @@ pub(crate) mod test_helpers {
         rand::SeedableRng::from_seed(seed)
     }
 }
-
-
-
-mod panic_unwind;
