@@ -1,3 +1,5 @@
+// This module is a fork of https://github.com/rust-lang/rust/tree/master/library/panic_unwind
+
 //! Implementation of panics via stack unwinding
 //!
 //! This crate is an implementation of panics in Rust using "most native" stack
