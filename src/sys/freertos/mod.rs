@@ -31,5 +31,10 @@ pub use common::*;
 
 mod freertos_api;
 
-mod panic_unwind;
+// support for panics
 pub mod unwind;
+#[cfg(panic_unwind)]
+mod panic_unwind;
+
+#[cfg(not(panic_unwind))]
+mod panic_abort;
