@@ -38,7 +38,6 @@
 
 use super::dwarf::eh::{self, EHAction, EHContext};
 use crate::ffi::c_int;
-
 use crate::sys::freertos::unwind as uw;
 
 // Register ids were lifted from LLVM's TargetLowering::getExceptionPointerRegister()
@@ -92,7 +91,8 @@ const UNWIND_DATA_REG: (i32, i32) = (4, 5); // a0, a1
 // https://github.com/gcc-mirror/gcc/blob/master/libstdc++-v3/libsupc++/eh_personality.cc
 // https://github.com/gcc-mirror/gcc/blob/trunk/libgcc/unwind-c.c
 
-
+cfg_if::cfg_if! {
+    if #[cfg(all(target_arch = "arm", not(target_os = "ios"), not(target_os = "tvos"), not(target_os = "watchos"), not(target_os = "netbsd")))] {
         // ARM EHABI personality routine.
         // https://web.archive.org/web/20190728160938/https://infocenter.arm.com/help/topic/com.arm.doc.ihi0038b/IHI0038B_ehabi.pdf
         //
@@ -189,8 +189,91 @@ const UNWIND_DATA_REG: (i32, i32) = (4, 5); // a0, a1
                 ) -> uw::_Unwind_Reason_Code;
             }
         }
+    } else {
+        // Default personality routine, which is used directly on most targets
+        // and indirectly on Windows x86_64 via SEH.
+        unsafe extern "C" fn rust_eh_personality_impl(
+            version: c_int,
+            actions: uw::_Unwind_Action,
+            _exception_class: uw::_Unwind_Exception_Class,
+            exception_object: *mut uw::_Unwind_Exception,
+            context: *mut uw::_Unwind_Context,
+        ) -> uw::_Unwind_Reason_Code {
+            if version != 1 {
+                return uw::_URC_FATAL_PHASE1_ERROR;
+            }
+            let eh_action = match find_eh_action(context) {
+                Ok(action) => action,
+                Err(_) => return uw::_URC_FATAL_PHASE1_ERROR,
+            };
+            if actions as i32 & uw::_UA_SEARCH_PHASE as i32 != 0 {
+                match eh_action {
+                    EHAction::None | EHAction::Cleanup(_) => uw::_URC_CONTINUE_UNWIND,
+                    EHAction::Catch(_) | EHAction::Filter(_) => uw::_URC_HANDLER_FOUND,
+                    EHAction::Terminate => uw::_URC_FATAL_PHASE1_ERROR,
+                }
+            } else {
+                match eh_action {
+                    EHAction::None => uw::_URC_CONTINUE_UNWIND,
+                    // Forced unwinding hits a terminate action.
+                    EHAction::Filter(_) if actions as i32 & uw::_UA_FORCE_UNWIND as i32 != 0 => uw::_URC_CONTINUE_UNWIND,
+                    EHAction::Cleanup(lpad) | EHAction::Catch(lpad) | EHAction::Filter(lpad) => {
+                        uw::_Unwind_SetGR(
+                            context,
+                            UNWIND_DATA_REG.0,
+                            exception_object.cast(),
+                        );
+                        uw::_Unwind_SetGR(context, UNWIND_DATA_REG.1, core::ptr::null());
+                        uw::_Unwind_SetIP(context, lpad);
+                        uw::_URC_INSTALL_CONTEXT
+                    }
+                    EHAction::Terminate => uw::_URC_FATAL_PHASE2_ERROR,
+                }
+            }
+        }
 
-
+        cfg_if::cfg_if! {
+            if #[cfg(all(windows, any(target_arch = "aarch64", target_arch = "x86_64"), target_env = "gnu"))] {
+                // On x86_64 MinGW targets, the unwinding mechanism is SEH however the unwind
+                // handler data (aka LSDA) uses GCC-compatible encoding.
+                #[lang = "eh_personality"]
+                #[allow(nonstandard_style)]
+                unsafe extern "C" fn rust_eh_personality(
+                    exceptionRecord: *mut uw::EXCEPTION_RECORD,
+                    establisherFrame: uw::LPVOID,
+                    contextRecord: *mut uw::CONTEXT,
+                    dispatcherContext: *mut uw::DISPATCHER_CONTEXT,
+                ) -> uw::EXCEPTION_DISPOSITION {
+                    uw::_GCC_specific_handler(
+                        exceptionRecord,
+                        establisherFrame,
+                        contextRecord,
+                        dispatcherContext,
+                        rust_eh_personality_impl,
+                    )
+                }
+            } else {
+                // The personality routine for most of our targets.
+                #[lang = "eh_personality"]
+                unsafe extern "C" fn rust_eh_personality(
+                    version: c_int,
+                    actions: uw::_Unwind_Action,
+                    exception_class: uw::_Unwind_Exception_Class,
+                    exception_object: *mut uw::_Unwind_Exception,
+                    context: *mut uw::_Unwind_Context,
+                ) -> uw::_Unwind_Reason_Code {
+                    rust_eh_personality_impl(
+                        version,
+                        actions,
+                        exception_class,
+                        exception_object,
+                        context,
+                    )
+                }
+            }
+        }
+    }
+}
 
 unsafe fn find_eh_action(context: *mut uw::_Unwind_Context) -> Result<EHAction, ()> {
     let lsda = uw::_Unwind_GetLanguageSpecificData(context) as *const u8;

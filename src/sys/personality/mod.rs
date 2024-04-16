@@ -11,6 +11,4 @@
 //! backtraces.
 
 mod dwarf;
-
-
-        mod gcc;
+mod gcc;

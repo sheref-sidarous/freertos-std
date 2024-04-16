@@ -33,8 +33,8 @@ mod freertos_api;
 
 // support for panics
 pub mod unwind;
-#[cfg(panic_unwind)]
+#[cfg(feature = "panic-unwind")]
 mod panic_unwind;
 
-#[cfg(not(panic_unwind))]
+#[cfg(not(feature = "panic-unwind"))]
 mod panic_abort;
