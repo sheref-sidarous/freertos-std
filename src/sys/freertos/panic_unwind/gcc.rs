@@ -40,10 +40,7 @@ use crate::boxed::Box;
 use core::any::Any;
 use core::ptr;
 
-#[path="../unwind/mod.rs"]
-mod unwind;
-
-use unwind as uw;
+use crate::sys::freertos::unwind as uw;
 
 // In case where multiple copies of std exist in a single process,
 // we use address of this static variable to distinguish an exception raised by
